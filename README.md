@@ -11,4 +11,13 @@ input images.
 
 # Data
 
-- URL for Magic the Gathering Data: https://www.kaggle.com/mylesoneill/magic-the-gathering-cards/download
+### Magic The Gathering:
+
+- Download raw data locally with `download_magic`
+
+### Pokemon
+
+- `cd ../`
+- `git clone git@github.com:PokemonTCG/pokemon-tcg-data.git` (clone to same directory as this project for defaults)
+- `cd card-classifier`
+- 

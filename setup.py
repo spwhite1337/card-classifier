@@ -8,7 +8,8 @@ setup(
     author_email='spwhite1337@gmail.com',
     packages=find_packages(),
     entry_points={'console_scripts': [
-        'download_magic = scripts.download:download_magic'
+        'download_magic = scripts.download:download_magic',
+        'download_pokemon = scripts.download:download_pokemon',
     ]},
     install_requires=[
         'pandas',
