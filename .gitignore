@@ -1,0 +1,11 @@
+data/
+
+# egg
+*.egg-info/
+
+# Hiddens
+*.iml
+*.xml
+
+# Pycache
+*.pyc
