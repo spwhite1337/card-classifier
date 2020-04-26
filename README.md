@@ -11,3 +11,4 @@ input images.
 
 # Data
 
+- URL for Magic the Gathering Data: https://www.kaggle.com/mylesoneill/magic-the-gathering-cards/download
