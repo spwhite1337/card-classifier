@@ -60,10 +60,11 @@ def download_mtg(metadata: pd.DataFrame):
     """
     Download cards from web and save in data/
     """
-    save_dir = os.path.join(ROOT_DIR, 'data', 'images')
+    save_dir = os.path.join(ROOT_DIR, 'data', 'mtg_images')
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
+    failed_images = []
     for color, df in tqdm(metadata.groupby('color'), total=len(set(metadata['color']))):
         color_dir = os.path.join(save_dir, color)
         if not os.path.exists(color_dir):
@@ -73,9 +74,16 @@ def download_mtg(metadata: pd.DataFrame):
             fn = row['multiverseId']
             if url is None:
                 continue
-            r = requests.get(url, stream=True)
-            with open(os.path.join(color_dir, str(fn) + '.jpg'), 'wb') as handler:
-                handler.write(r.content)
+            try:
+                r = requests.get(url, stream=True)
+                with open(os.path.join(color_dir, str(int(fn)) + '.jpg'), 'wb') as handler:
+                    handler.write(r.content)
+            except Exception as err:
+                failed_image = (color, fn, err)
+                failed_images.append(failed_image)
+    df_failed_images = pd.DataFrame(failed_images, columns=['color', 'multiverseId', 'exception'])
+
+    return df_failed_images
 
 
 def download_magic():
@@ -84,6 +92,9 @@ def download_magic():
     logger.info('Wrangling Metadata')
     metadata = wrangle_mtg_metadata(metadata)
     logger.info('Downloading Image files')
-    download_mtg(metadata)
+    df_failed = download_mtg(metadata)
+    logger.info('Failed to download {} images.'.format(df_failed.shape[0]))
     logger.info('Saving Metadata')
     metadata.to_csv(os.path.join(ROOT_DIR, 'data', 'metadata.csv'), index=False)
+    logger.info('Saving Failed Images info.')
+    df_failed.to_csv(os.path.join(ROOT_DIR, 'data', 'failed_images.csv'), index=False)
