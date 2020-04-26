@@ -115,20 +115,26 @@ def get_pokemon_metadata(repo_dir: str = os.path.join(os.path.dirname(ROOT_DIR),
 
     df_metadata = []
     for f in files:
-        with open(os.path.join(metadata_dir, f)) as handler:
-            fileset = json.load(handler)
-        for pokemons in fileset:
-            names = [pokemon.get('name') for pokemon in pokemons]
-            types = [pokemon.get('types') for pokemon in pokemons]
-            imageurls = [pokemon.get('imageUrl') for pokemon in pokemons]
-            df_fileset = pd.DataFrame({
-                'Fileset': [f] * len(names),
-                'Name': names,
-                'Type': types,
-                'URL': imageurls
-            })
-            df_metadata.append(df_fileset)
+        with open(os.path.join(metadata_dir, f), encoding='utf-8') as handler:
+            pokemons = json.load(handler)
+        names = [pokemon.get('name') for pokemon in pokemons]
+        types = [pokemon.get('types') for pokemon in pokemons]
+        imageurls = [pokemon.get('imageUrl') for pokemon in pokemons]
+        df_fileset = pd.DataFrame({
+            'Fileset': [f] * len(names),
+            'Name': names,
+            'Type': types,
+            'URL': imageurls
+        })
+        df_metadata.append(df_fileset)
     df_metadata = pd.concat(df_metadata)
+
+    # Wrangle type lists
+    def wrangle_types(pokemon_type):
+        if isinstance(pokemon_type, list):
+            pokemon_type = '_'.join(pokemon_type)
+        return pokemon_type
+    df_metadata['Type'] = df_metadata['Type'].apply(lambda t: wrangle_types(t))
 
     # Drop duplicates
     df_metadata = df_metadata.drop_duplicates()
@@ -150,7 +156,7 @@ def _download_pokemon(metadata: pd.DataFrame):
         type_dir = os.path.join(save_dir, pokemon_type)
         if not os.path.exists(type_dir):
             os.mkdir(type_dir)
-        for idx, row in df_type.iterrows():
+        for idx, row in tqdm(df_type.iterrows(), total=df_type.shape[0]):
             url = row['URL']
             fn = row['Name'] + '_{}'.format(idx)
             if url is None:
