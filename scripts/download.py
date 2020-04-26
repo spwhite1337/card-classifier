@@ -64,6 +64,7 @@ def download_mtg(metadata: pd.DataFrame):
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
+    # Download images based on metadata
     failed_images = []
     for color, df in tqdm(metadata.groupby('color'), total=len(set(metadata['color']))):
         color_dir = os.path.join(save_dir, color)
