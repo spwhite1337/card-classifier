@@ -163,10 +163,11 @@ def _download_pokemon(metadata: pd.DataFrame):
                 continue
             try:
                 r = requests.get(url, stream=True)
-                with os.path.join(type_dir, str(fn) + '.jpg') as handler:
+                with open(os.path.join(type_dir, str(fn) + '.jpg'), 'wb') as handler:
                     handler.write(r.content)
             except Exception as err:
                 failed_image = (pokemon_type, fn, err)
+                logger.info(failed_image)
                 failed_images.append(failed_image)
     df_failed_images = pd.DataFrame(failed_images, columns=['Type', 'Name', 'Exception'])
 
