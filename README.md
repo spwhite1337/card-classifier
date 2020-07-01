@@ -15,9 +15,5 @@ input images.
 
 - Download raw data locally with `download_magic`
 
-### Pokemon
 
-- `cd ../`
-- `git clone git@github.com:PokemonTCG/pokemon-tcg-data.git` (clone to same directory as this project for defaults)
-- `cd card-classifier`
-- 
+
