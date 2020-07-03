@@ -1,6 +1,6 @@
 # Card Classifier
 
-Buzzfeed style app that outputs the card color in playing card universes (e.g. Magic The Gathering, Pokemon) from an
+Buzzfeed style app that outputs the card color for Magic The Gathering from an
 input images. 
 
 # Procedure
