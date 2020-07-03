@@ -8,7 +8,8 @@ setup(
     author_email='spwhite1337@gmail.com',
     packages=find_packages(),
     entry_points={'console_scripts': [
-        'download_magic = scripts.download:download_magic',
+        'cc_download_magic = scripts.download:download_magic',
+        'cc_curate_images = scripts.curate:curate_images'
     ]},
     install_requires=[
         'pandas',
@@ -20,6 +21,7 @@ setup(
         'ipykernel',
         'opencv-python',
         'Keras',
+        'scikit-learn',
         'tqdm'
     ]
 )
