@@ -9,7 +9,8 @@ setup(
     packages=find_packages(),
     entry_points={'console_scripts': [
         'cc_download_magic = scripts.download:download_magic',
-        'cc_curate_images = scripts.curate:curate_images'
+        'cc_curate_images = scripts.curate:curate_images',
+        'cc_count_cards = scripts.curate:count_cards'
     ]},
     install_requires=[
         'pandas',

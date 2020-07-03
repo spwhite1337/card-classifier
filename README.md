@@ -11,9 +11,10 @@ input images.
 
 # Data
 
-### Magic The Gathering:
+- Download raw data locally with `cc_download_magic`
+- Curate data to crop down to artwork with `cc_curate_images`
 
-- Download raw data locally with `download_magic`
+# Train
 
 
 

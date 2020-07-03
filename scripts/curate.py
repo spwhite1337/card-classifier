@@ -29,7 +29,7 @@ def curate_images():
     card_colors = [d for d in os.listdir(RAW_DIR) if '.csv' not in d]
 
     # Iterate through colors
-    for color in card_colors:
+    for color in tqdm(card_colors):
         logger.info('Cropping {} images.'.format(color))
         # Load all images
         for img in tqdm([f for f in os.listdir(os.path.join(RAW_DIR, color)) if '.jpg' in f]):
@@ -42,3 +42,12 @@ def curate_images():
                 if not os.path.exists(save_dir):
                     os.mkdir(save_dir)
                 cv2.imwrite(os.path.join(save_dir, img), cropped)
+
+
+def count_cards():
+    CURATED_DIR = os.path.join(ROOT_DIR, 'data', 'curated')
+    if not os.path.exists(CURATED_DIR):
+        return
+
+    for card_dir in os.listdir(CURATED_DIR):
+        logger.info('Num Cards in {}: {}'.format(card_dir, len(os.listdir(os.path.join(CURATED_DIR, card_dir)))))
