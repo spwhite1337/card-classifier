@@ -1,4 +1,5 @@
 import os
+import shutil
 import cv2
 import random
 import argparse
@@ -80,7 +81,7 @@ def split_images(colors: list, curated_dir: str, split: float):
             for f in tqdm(files_to_move):
                 src_file = os.path.join(src_dir, f)
                 dst_file = os.path.join(dst_dir, f)
-                os.system('mv {} {}'.format(src_file, dst_file))
+                shutil.move(src_file, dst_file)
 
 
 def curate_images():
