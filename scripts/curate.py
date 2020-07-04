@@ -84,6 +84,24 @@ def split_images(colors: list, curated_dir: str, split: float):
                 shutil.move(src_file, dst_file)
 
 
+def count_cards(curated_dir: str = None):
+    """
+    Count cards in sorted directories
+    """
+    if curated_dir is None:
+        curated_dir = os.path.join(ROOT_DIR, 'data', 'curated')
+    if not os.path.exists(curated_dir):
+        return
+
+    for card_dir in os.listdir(curated_dir):
+        for target_dir in ['train', 'test']:
+            for cls_dir in ['positive', 'negative']:
+                logger.info('Num Cards in {}, {}, {}: {}'.format(
+                    card_dir, target_dir, cls_dir,
+                    len(os.listdir(os.path.join(curated_dir, card_dir, target_dir, cls_dir))))
+                )
+
+
 def curate_images():
     """
     Load images, crop, and save in sorted folder
@@ -112,19 +130,5 @@ def curate_images():
     # Split for a test set
     split_images(card_colors, CURATED_DIR, args.split)
 
-
-def count_cards():
-    """
-    Count cards in sorted directories
-    """
-    CURATED_DIR = os.path.join(ROOT_DIR, 'data', 'curated')
-    if not os.path.exists(CURATED_DIR):
-        return
-
-    for card_dir in os.listdir(CURATED_DIR):
-        for target_dir in ['train', 'test']:
-            for cls_dir in ['positive', 'negative']:
-                logger.info('Num Cards in {}, {}, {}: {}'.format(
-                    card_dir, target_dir, cls_dir,
-                    len(os.listdir(os.path.join(CURATED_DIR, card_dir, target_dir, cls_dir))))
-                )
+    # Count cards at the end for quality assurance
+    count_cards(CURATED_DIR)
