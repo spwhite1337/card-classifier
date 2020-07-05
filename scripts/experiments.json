@@ -1,6 +1,6 @@
 [
    {
-   "model_type": "VGG"
+      "model_type": "VGG"
    },
    {
       "model_type": "ResNet"

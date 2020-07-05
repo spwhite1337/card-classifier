@@ -15,7 +15,11 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import TensorBoard, CSVLogger, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
+from tensorflow.keras.layers import Flatten, Dense
+from tensorflow.keras.activations import sigmoid
+from tensorflow.keras.metrics import AUC
 
 from sklearn.metrics import auc, roc_curve
 
@@ -88,7 +92,7 @@ class MagicCardClassifier(object):
             horizontal_flip=True if self.horizontal_flip else None,
             brightness_range=[0.9, 1.1] if self.brightness_range else None,
             data_format='channels_last',
-            preprocessing_function=color_change if self.color_change else None
+            # preprocessing_function=color_change if self.color_change else None
         )
         train_generator = train_datagen.flow_from_directory(
             directory=os.path.join(self.curated_dir, color, 'train'),
@@ -160,18 +164,32 @@ class MagicCardClassifier(object):
             train, test = self.process(color)
 
             # Instantiate model
-            model = self.model_options.get(self.model_type)(
-                include_top=True,
-                weights='imagenet',
-            )
-            if model is None:
-                raise ValueError('Incorrect model selection.')
+            if self.model_type == 'debug':
+                model = Sequential([
+                    Dense(3, activation='sigmoid'),
+                    Dense(3, activation='sigmoid'),
+                    Dense(3, activation='sigmoid')
+                ])
+            else:
+                model = Sequential()
+                model.add(self.model_options.get(self.model_type)(
+                    include_top=False,
+                    weights='imagenet',
+                    input_shape=(self.target_size[0], self.target_size[1], 3)
+                ))
+                model.add(Dense(10))
+                if model is None:
+                    raise ValueError('Incorrect model selection.')
+
+            # Add activation layer for binary classification
+            model.add(Flatten())
+            model.add(Dense(1, activation='sigmoid'))
 
             # Compile the model
             model.compile(
                 optimizer='Adam',
                 loss='binary_crossentropy',
-                metrics=['auc']
+                metrics=[AUC()]
             )
 
             # Fit the model
@@ -182,7 +200,12 @@ class MagicCardClassifier(object):
                       class_weight=self._class_weights(color),
                       epochs=self.epochs,
                       verbose=2,
-                      callbacks=[tensorboard, csv_logger, early_stopping, reduce_lr]
+                      callbacks=[
+                          # tensorboard,
+                          # csv_logger,
+                          early_stopping,
+                          reduce_lr
+                      ]
                       )
             self.models[color] = model
 
