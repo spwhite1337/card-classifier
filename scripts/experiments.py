@@ -8,7 +8,7 @@ from config import logger
 
 def run_experiments():
     # Load experiments
-    with open(os.path.join(os.getcwd(), 'experiments.json')) as f:
+    with open(os.path.join(os.getcwd(), 'scripts', 'experiments.json')) as f:
         experiments = json.load(f)
 
     # Iterate through experiments
