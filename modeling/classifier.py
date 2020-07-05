@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import pickle
 from typing import Tuple
 
@@ -13,7 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.applications import ResNet50, VGG16, InceptionV3
+from tensorflow.keras.callbacks import TensorBoard, CSVLogger, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
 
 from sklearn.metrics import auc, roc_curve
 
@@ -29,10 +31,10 @@ class MagicCardClassifier(object):
     curated_dir = os.path.join(ROOT_DIR, 'data', 'curated')
 
     # Models
-    models = {
+    model_options = {
         'VGG': VGG16,
         'ResNet': ResNet50,
-        'inception': InceptionV3,
+        'Inception': InceptionV3,
     }
 
     def __init__(self,
@@ -66,7 +68,8 @@ class MagicCardClassifier(object):
 
         # I/O
         self.results_dir: str = results_dir
-        self.models = None
+        self.models = {}
+        self.timestamp = str(int(time.time()))
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
@@ -99,9 +102,7 @@ class MagicCardClassifier(object):
         )
 
         # Set up test data generator without augmentation
-        test_datagen = ImageDataGenerator(
-            rescale=1/255.
-        )
+        test_datagen = ImageDataGenerator(rescale=1/255.)
         test_generator = test_datagen.flow_from_directory(
             directory=os.path.join(self.curated_dir, color, 'test'),
             target_size=self.target_size,
@@ -115,26 +116,160 @@ class MagicCardClassifier(object):
 
         return train_generator, test_generator
 
+    def _prediction_generator(self, color: str, cls: str):
+        """
+        Create a keras generator for predictions
+        """
+        predict_datagen = ImageDataGenerator(rescale=1/255.)
+        predict_generator = predict_datagen.flow_from_directory(
+            directory=os.path.join(self.curated_dir, color, cls),
+            target_size=self.target_size,
+            color_mode='rgb',
+            classes=None,
+            batch_size=1,
+            class_mode='binary',
+            shuffle=False,
+            seed=187
+        )
+        return predict_generator
+
+    def _class_weights(self, color: str) -> dict:
+        """
+        Output a dictionary to weight classes:
+        The data generators list negative first, so its index is 0 and weight is set at 1.;
+        The weight on the positive class (1) is the number of neg-cases / number of pos-cases
+        """
+        train_dir = os.path.join(self.curated_dir, color, 'train')
+        num_pos_cases = len(os.listdir(os.path.join(train_dir, 'positive')))
+        num_neg_cases = len(os.listdir(os.path.join(train_dir, 'negative')))
+
+        return {0: 1., 1: num_neg_cases / num_pos_cases}
+
     def train(self):
         """
         Train a model for each color class
         """
+        # Callbacks
+        tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
+        csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger.csv'), separator=',', append=False)
+        early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0, cooldown=2)
+
+        # Train a model for each color
         for color in self.card_colors:
             train, test = self.process(color)
 
-            # Get model
-            model = self.models.get(self.model_type)
+            # Instantiate model
+            model = self.model_options.get(self.model_type)(
+                include_top=True,
+                weights='imagenet',
+            )
             if model is None:
                 raise ValueError('Incorrect model selection.')
 
-            step_size_train = train.n // train.batch_size
-            step_size_test = test.n // test.batch_size
-            model.fit_generator(generator=train,
-                                steps_per_epoch=step_size_train,
-                                validation_data=test,
-                                validation_steps=step_size_test,
-                                epochs=self.epochs
-                                )
+            # Fit the model
+            model.fit(generator=train,
+                      steps_per_epoch=train.n // train.batch_size,
+                      validation_data=test,
+                      validation_steps=test.n // test.batch_size,
+                      class_weight=self._class_weights(color),
+                      epochs=self.epochs,
+                      verbose=2,
+                      callbacks=[tensorboard, csv_logger, early_stopping, reduce_lr]
+                      )
+            self.models[color] = model
 
+    def diagnose(self):
+        """
+        Run diagnostics for a trained model
+        """
+        if len(self.models) == 0:
+            raise ValueError('Train models first.')
 
+        # Get predictions for each positive class with every model
+        df_results = []
+        for model_color, model in self.models.items():
+            for card_color in self.card_colors:
+                logger.info('Predicting {} with {}'.format(card_color, model_color))
+                pred_generator = self._prediction_generator(card_color, 'positive')
+                predictions = model.predict(
+                    pred_generator,
+                    batch_size=1,
+                    verbose=1,
+                )
+                filenames = pred_generator.filenames
+                df_result = pd.DataFrame({'preds': predictions, 'filenames': filenames}).\
+                    assign(ModelColor=model_color, CardColor=card_color)
+                df_results.append(df_result)
+        df_results = pd.concat(df_results).reset_index(drop=True)
 
+        # Plots
+        with PdfPages(os.path.join(ROOT_DIR, 'modeling', 'results', 'diagnostics_{}.pdf'.format(self.timestamp))) \
+                as pdf:
+
+            # ROC Curve
+            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
+            ax = ax.reshape(-1, 1)
+            for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
+                preds = df_model['preds'].values
+                y = (df_model['CardColor'] == color).values
+                fpr, tpr, th = roc_curve(y, preds)
+                score = auc(y, preds)
+
+                ax[idx].plot(fpr, tpr, label='AUC: {a:0.2f}'.format(a=score))
+                ax[idx].plot([0, 1], [0, 1], color='black')
+                ax[idx].set_ylabel('True Positive Rate')
+                ax[idx].set_xlabel('False Positive Rate')
+                ax[idx].set_title(color)
+                ax[idx].legend()
+                ax[idx].grid(True)
+            plt.tight_layout()
+            pdf.savefig()
+            plt.close()
+
+            # Precision / Recall
+            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
+            ax = ax.reshape(-1, 1)
+            for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
+                preds = df_model['preds'].values
+                y = (df_model['CardColor'] == color).values
+                fpr, tpr, th = roc_curve(y, preds)
+
+                ax[idx].plot(th, fpr, label='False-Positive')
+                ax[idx].plot(th, tpr, label='True-Positive')
+                ax[idx].set_xlabel('Threshold')
+                ax[idx].set_title(color)
+                ax[idx].legend()
+                ax[idx].grid(True)
+            plt.tight_layout()
+            pdf.savefig()
+            plt.close()
+
+            # Histograms
+            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
+            ax = ax.reshape(-1, 1)
+            for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
+                preds = df_model['preds'].values
+                y = (df_model['CardColor'] == color).values
+
+                bins = np.linspace(0., 1., 40)
+                for y_val in set(y):
+                    ax[idx].hist(preds[y == y_val], label=y_val, density=True, alpha=0.5, bins=bins)
+                ax[idx].set_xlabel('Preds')
+                ax[idx].title(color)
+                ax[idx].grid(True)
+            plt.tight_layout()
+            pdf.savefig()
+            plt.close()
+
+        # Card samples
+        with PdfPages(os.path.join(ROOT_DIR, 'modeling', 'results', 'samples_{}.pdf'.format(self.timestamp))) \
+                as pdf:
+            # Sample images for each model
+
+            for color in set(df_results['ModelColor']):
+                # True Positive, high scoring
+                tps = list(
+                    df_results[df_results['ModelColor'] == color].sort_values('preds', ascending=False)['filename']
+                             )[:3]
+                fns = df_results[df_results['Model']]
