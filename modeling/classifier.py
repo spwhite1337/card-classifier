@@ -43,12 +43,12 @@ class MagicCardClassifier(object):
                  horizontal_flip: bool = True,
                  brightness_range: bool = True,
                  color_change: bool = True,
-                 target_size: Tuple = (256, 256),
+                 target_size: Tuple = (128, 128),
 
                  # Training
                  model_type: str = 'VGG',
-                 batch_size: int = 32,
-                 epochs: int = 50,
+                 batch_size: int = 12,
+                 epochs: int = 5,
 
                  # I/O
                  results_dir: str = os.path.join(ROOT_DIR, 'modeling', 'results')
