@@ -55,6 +55,7 @@ class MagicCardClassifier(object):
                  epochs: int = 5,
 
                  # I/O
+                 debug: bool = False,
                  results_dir: str = os.path.join(ROOT_DIR, 'modeling', 'results')
                  ):
 
@@ -71,6 +72,7 @@ class MagicCardClassifier(object):
         self.epochs = epochs
 
         # I/O
+        self.debug = debug
         self.results_dir: str = results_dir
         self.models = {}
         self.timestamp = str(int(time.time()))
@@ -120,18 +122,18 @@ class MagicCardClassifier(object):
 
         return train_generator, test_generator
 
-    def _prediction_generator(self, color: str, cls: str):
+    def _prediction_generator(self, color: str):
         """
         Create a keras generator for predictions
         """
         predict_datagen = ImageDataGenerator(rescale=1/255.)
         predict_generator = predict_datagen.flow_from_directory(
-            directory=os.path.join(self.curated_dir, color, 'test', cls),
+            directory=os.path.join(self.curated_dir, color, 'validation'),
             target_size=self.target_size,
             color_mode='rgb',
             classes=None,
             batch_size=1,
-            class_mode='binary',
+            class_mode=None,
             shuffle=False,
             seed=187
         )
@@ -153,18 +155,14 @@ class MagicCardClassifier(object):
         """
         Train a model for each color class
         """
-        # Callbacks
-        tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
-        csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger.csv'), separator=',', append=False)
-        early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0, cooldown=2)
+
 
         # Train a model for each color
         for color in self.card_colors:
             train, test = self.process(color)
 
             # Instantiate model
-            if self.model_type == 'debug':
+            if self.debug:
                 model = Sequential([
                     Dense(3, activation='sigmoid'),
                     Dense(3, activation='sigmoid'),
@@ -192,21 +190,27 @@ class MagicCardClassifier(object):
                 metrics=[AUC()]
             )
 
+            # Callbacks
+            tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
+            csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}.csv'.format(color)), separator=',',
+                                   append=False)
+            early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+            reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
+                                          cooldown=2)
+            if self.debug:
+                callbacks = [early_stopping, reduce_lr]
+            else:
+                callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr]
+
             # Fit the model
             model.fit(x=train,
-                      steps_per_epoch=train.n // train.batch_size,
+                      steps_per_epoch=train.n // train.batch_size if not self.debug else 100,
                       validation_data=test,
-                      validation_steps=test.n // test.batch_size,
+                      validation_steps=test.n // test.batch_size if not self.debug else 100,
                       class_weight=self._class_weights(color),
-                      epochs=self.epochs,
+                      epochs=self.epochs if not self.debug else 1,
                       verbose=1,
-                      callbacks=[
-                          # tensorboard,
-                          # csv_logger,
-                          early_stopping,
-                          reduce_lr
-                      ]
-                      )
+                      callbacks=callbacks)
             self.models[color] = model
 
     def diagnose(self):
@@ -221,7 +225,7 @@ class MagicCardClassifier(object):
         for model_color, model in self.models.items():
             for card_color in self.card_colors:
                 logger.info('Predicting {} with {}'.format(card_color, model_color))
-                pred_generator = self._prediction_generator(card_color, 'positive')
+                pred_generator = self._prediction_generator(card_color)
                 predictions = model.predict(
                     pred_generator,
                     batch_size=1,
@@ -351,3 +355,10 @@ class MagicCardClassifier(object):
         save_file = 'magic_card_classifier_{}.pkl'.format(self.timestamp)
         with open(os.path.join(ROOT_DIR, 'modeling', 'results', save_file), 'wb') as fp:
             pickle.dump(self, fp)
+
+    def predict(self, input_dir: str) -> dict:
+        """
+        From a directory of images generate likelihood of each color then output a cardtype based on these.
+        """
+        # Scoring plan:
+        raise NotImplementedError
