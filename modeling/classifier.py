@@ -167,6 +167,13 @@ class MagicCardClassifier(object):
             if model is None:
                 raise ValueError('Incorrect model selection.')
 
+            # Compile the model
+            model.compile(
+                optimizer='Adam',
+                loss='binary_crossentropy',
+                metrics=['auc']
+            )
+
             # Fit the model
             model.fit(x=train,
                       steps_per_epoch=train.n // train.batch_size,
