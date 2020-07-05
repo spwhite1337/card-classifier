@@ -18,7 +18,7 @@ from tensorflow.keras.callbacks import TensorBoard, CSVLogger, EarlyStopping, Re
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
 from tensorflow.keras.layers import Flatten, Dense
-from tensorflow.keras.activations import sigmoid
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import AUC
 
 from sklearn.metrics import auc, roc_curve
@@ -51,6 +51,7 @@ class MagicCardClassifier(object):
 
                  # Training
                  model_type: str = 'VGG',
+                 learning_rate: float = 10 ** -5,
                  batch_size: int = 12,
                  epochs: int = 5,
 
@@ -68,6 +69,7 @@ class MagicCardClassifier(object):
 
         # Training
         self.model_type = model_type
+        self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.epochs = epochs
 
@@ -124,7 +126,7 @@ class MagicCardClassifier(object):
 
     def _prediction_generator(self, color: str):
         """
-        Create a keras generator for predictions
+        Create a Keras generator for predictions
         """
         predict_datagen = ImageDataGenerator(rescale=1/255.)
         predict_generator = predict_datagen.flow_from_directory(
@@ -155,14 +157,12 @@ class MagicCardClassifier(object):
         """
         Train a model for each color class
         """
-
-
-        # Train a model for each color
         for color in self.card_colors:
             train, test = self.process(color)
 
             # Instantiate model
             if self.debug:
+                # Quick model for debugging
                 model = Sequential([
                     Dense(3, activation='sigmoid'),
                     Dense(3, activation='sigmoid'),
@@ -175,9 +175,8 @@ class MagicCardClassifier(object):
                     weights='imagenet',
                     input_shape=(self.target_size[0], self.target_size[1], 3)
                 ))
+                # 10 Dense NN on "top"
                 model.add(Dense(10))
-                if model is None:
-                    raise ValueError('Incorrect model selection.')
 
             # Add activation layer for binary classification
             model.add(Flatten())
@@ -185,37 +184,36 @@ class MagicCardClassifier(object):
 
             # Compile the model
             model.compile(
-                optimizer='Adam',
+                optimizer=Adam(learning_rate=self.learning_rate),
                 loss='binary_crossentropy',
                 metrics=[AUC()]
             )
 
             # Callbacks
             tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
-            csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}.csv'.format(color)), separator=',',
-                                   append=False)
+            csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
+                color, self.model_type, self.timestamp)), separator=',', append=False)
             early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
                                           cooldown=2)
-            if self.debug:
-                callbacks = [early_stopping, reduce_lr]
-            else:
-                callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr]
+            callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else []
 
             # Fit the model
             model.fit(x=train,
-                      steps_per_epoch=train.n // train.batch_size if not self.debug else 100,
+                      steps_per_epoch=train.n // train.batch_size if not self.debug else 10,
                       validation_data=test,
-                      validation_steps=test.n // test.batch_size if not self.debug else 100,
+                      validation_steps=test.n // test.batch_size if not self.debug else 10,
                       class_weight=self._class_weights(color),
                       epochs=self.epochs if not self.debug else 1,
                       verbose=1,
                       callbacks=callbacks)
+
+            # Save the model
             self.models[color] = model
 
     def diagnose(self):
         """
-        Run diagnostics for a trained model
+        Run diagnostics for the trained models
         """
         if len(self.models) == 0:
             raise ValueError('Train models first.')
@@ -224,21 +222,25 @@ class MagicCardClassifier(object):
         df_results = []
         for model_color, model in self.models.items():
             for card_color in self.card_colors:
-                logger.info('Predicting {} with {}'.format(card_color, model_color))
+                # Get generator
                 pred_generator = self._prediction_generator(card_color)
+                # Predict
+                logger.info('Predicting {} images in {} with {}'.format(pred_generator.n, card_color, model_color))
                 predictions = model.predict(
-                    pred_generator,
+                    x=pred_generator,
                     batch_size=1,
                     verbose=1,
+                    steps=pred_generator.n if not self.debug else 10
                 )
-                filenames = pred_generator.filenames
-                df_result = pd.DataFrame({'preds': predictions, 'filenames': filenames}).\
+                # Gather
+                df_result = pd.DataFrame({'preds': predictions, 'filenames': pred_generator.filenames}).\
                     assign(ModelColor=model_color, CardColor=card_color)
                 df_results.append(df_result)
         df_results = pd.concat(df_results).reset_index(drop=True)
 
         # Plots
-        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}.pdf'.format(self.timestamp))) as pdf:
+        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}_{}.pdf'.format(self.model_type, self.timestamp))) \
+                as pdf:
 
             # ROC Curve
             logger.info('ROC Curves.')
@@ -299,7 +301,8 @@ class MagicCardClassifier(object):
             plt.close()
 
         # Card samples
-        with PdfPages(os.path.join(self.results_dir, 'samples_{}.pdf'.format(self.timestamp))) as pdf:
+        with PdfPages(os.path.join(self.results_dir, 'samples_{}_{}.pdf'.format(self.model_type, self.timestamp))) \
+                as pdf:
 
             # Sample images for each model
             logger.info('Getting Select Examples.')
@@ -352,7 +355,7 @@ class MagicCardClassifier(object):
         Save model
         """
         logger.info('Saving Classifier.')
-        save_file = 'magic_card_classifier_{}.pkl'.format(self.timestamp)
+        save_file = 'magic_card_classifier_{}_{}.pkl'.format(self.model_type, self.timestamp)
         with open(os.path.join(ROOT_DIR, 'modeling', 'results', save_file), 'wb') as fp:
             pickle.dump(self, fp)
 
