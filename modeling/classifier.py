@@ -309,3 +309,11 @@ class MagicCardClassifier(object):
                 plt.suptitle('Model: {}, Cards: {}, SampleType: {}'.format(model_color, card_color, sample_type))
                 pdf.savefig()
                 plt.close()
+
+    def save(self):
+        """
+        Save model
+        """
+        save_file = 'magic_card_classifier_{}.pkl'.format(self.timestamp)
+        with open(os.path.join(ROOT_DIR, 'modeling', 'results', save_file), 'wb') as fp:
+            pickle.dump(self, fp)
