@@ -17,7 +17,7 @@ def run_experiments():
         experiments = json.load(f)
 
     if args.debug:
-        experiments = [{'model_type': 'debug', 'epochs': 1}]
+        experiments = [{'debug': True}]
 
     # Iterate through experiments
     for experiment in experiments:
