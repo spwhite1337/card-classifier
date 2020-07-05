@@ -122,7 +122,7 @@ class MagicCardClassifier(object):
         """
         predict_datagen = ImageDataGenerator(rescale=1/255.)
         predict_generator = predict_datagen.flow_from_directory(
-            directory=os.path.join(self.curated_dir, color, cls),
+            directory=os.path.join(self.curated_dir, color, 'test', cls),
             target_size=self.target_size,
             color_mode='rgb',
             classes=None,
@@ -265,11 +265,47 @@ class MagicCardClassifier(object):
         # Card samples
         with PdfPages(os.path.join(ROOT_DIR, 'modeling', 'results', 'samples_{}.pdf'.format(self.timestamp))) \
                 as pdf:
-            # Sample images for each model
 
+            # Sample images for each model
+            df_samples = []
             for color in set(df_results['ModelColor']):
-                # True Positive, high scoring
-                tps = list(
-                    df_results[df_results['ModelColor'] == color].sort_values('preds', ascending=False)['filename']
-                             )[:3]
-                fns = df_results[df_results['Model']]
+                # True Positive, high scoring cards of this color
+                tps = df_results[(df_results['CardColor'] == color) & (df_results['ModelColor'] == color)].\
+                    sort_values('preds', ascending=False)[['filename', 'preds']]. \
+                    head(4). \
+                    assign(ModelColor=color, CardColor=color, SampleType='TruePositive')
+                # False negatives, low scoring cards of this color
+                fns = df_results[(df_results['CardColor'] == color) & (df_results['ModelColor'] == color)]. \
+                    sort_values('preds', ascending=True)[['filename', 'preds']].\
+                    head(4).\
+                    assign(ModelColor=color, CardColor=color, SampleType='FalseNegative')
+
+                # Gather
+                df_samples.append(pd.concat([tps, fns]))
+
+                # Loop for false positives
+                for other_color in set(df_results['CardColor']):
+                    if other_color == color:
+                        continue
+                    fps = df_results[(df_results['CardColor'] == other_color) & (df_results['ModelColor'] == color)].\
+                        sort_values('preds', ascending=False)[['filename', 'preds']]. \
+                        head(4). \
+                        assign(ModelColor=color, CardColor=other_color, SampleType='FalsePositive')
+                    df_samples.append(fps)
+            df_samples = pd.concat(df_samples).reset_index(drop=True)
+
+            # Plot cards
+            for (model_color, card_color, sample_type), df_plot in df_samples. \
+                    groupby(['ModelColor', 'CardColor', 'SampleType']):
+                card_dir = os.path.join(ROOT_DIR, 'data', 'curated', card_color, 'test', 'positive')
+
+                fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 12))
+                ax = ax.reshape(-1, 1)
+                for idx, (filename, df_score) in enumerate(df_plot.groupby('filename')):
+                    img = cv2.imread(os.path.join(card_dir, filename))
+                    ax[idx].imshow(img)
+                    ax[idx].set_title('{fn}, Score: {a:0.3f}'.format(fn=filename, a=df_score['preds'].iloc[0]))
+                plt.axis('off')
+                plt.suptitle('Model: {}, Cards: {}, SampleType: {}'.format(model_color, card_color, sample_type))
+                pdf.savefig()
+                plt.close()
