@@ -11,8 +11,7 @@ def run_experiments():
     with open(os.path.join(os.getcwd(), 'experiments.json')) as f:
         experiments = json.load(f)
 
-    # Create a list of dictionary for every combination of inputs
-
+    # Iterate through experiments
     for experiment in experiments:
         mcc = MagicCardClassifier(**experiment)
         try:
