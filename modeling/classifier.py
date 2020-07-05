@@ -204,8 +204,7 @@ class MagicCardClassifier(object):
         df_results = pd.concat(df_results).reset_index(drop=True)
 
         # Plots
-        with PdfPages(os.path.join(ROOT_DIR, 'modeling', 'results', 'diagnostics_{}.pdf'.format(self.timestamp))) \
-                as pdf:
+        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}.pdf'.format(self.timestamp))) as pdf:
 
             # ROC Curve
             logger.info('ROC Curves.')
@@ -266,8 +265,7 @@ class MagicCardClassifier(object):
             plt.close()
 
         # Card samples
-        with PdfPages(os.path.join(ROOT_DIR, 'modeling', 'results', 'samples_{}.pdf'.format(self.timestamp))) \
-                as pdf:
+        with PdfPages(os.path.join(self.results_dir, 'samples_{}.pdf'.format(self.timestamp))) as pdf:
 
             # Sample images for each model
             logger.info('Getting Select Examples.')
