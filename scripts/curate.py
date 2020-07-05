@@ -53,6 +53,7 @@ def sort_images(colors: list, cropped_dir: str, curated_dir: str):
     for save_color in colors:
         logger.info('Sorting {} Images'.format(save_color))
         pos_dir = _make_dir(os.path.join(curated_dir, save_color, 'train', 'positive'))
+        val_dir = _make_dir(os.path.join(curated_dir, save_color, 'validation', 'positive'))
         neg_dir = _make_dir(os.path.join(curated_dir, save_color, 'train', 'negative'))
 
         # Loop through colors, if it is the target color, save those files to the positive dir, else to the negative
@@ -60,6 +61,9 @@ def sort_images(colors: list, cropped_dir: str, curated_dir: str):
             src_dir = os.path.join(cropped_dir, load_color)
             dst_dir = pos_dir if load_color == save_color else neg_dir
             os.system('cp -r {}/*.jpg {}'.format(src_dir, dst_dir))
+            # Also save to validation dir if positive set
+            if dst_dir == pos_dir:
+                os.system('cp -r {}/*.jpg {}'.format(src_dir, val_dir))
 
 
 def split_images(colors: list, curated_dir: str, split: float):
