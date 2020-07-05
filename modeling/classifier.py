@@ -199,7 +199,7 @@ class MagicCardClassifier(object):
                       validation_steps=test.n // test.batch_size,
                       class_weight=self._class_weights(color),
                       epochs=self.epochs,
-                      verbose=2,
+                      verbose=1,
                       callbacks=[
                           # tensorboard,
                           # csv_logger,
