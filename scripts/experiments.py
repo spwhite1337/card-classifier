@@ -22,9 +22,9 @@ def run_experiments():
     # Iterate through experiments
     for experiment in experiments:
         mcc = MagicCardClassifier(**experiment)
-        # try:
-        mcc.train()
-        mcc.diagnose()
-        mcc.save()
-        # except Exception as err:
-        #     logger.error(err)
+        try:
+            mcc.train()
+            mcc.diagnose()
+            mcc.save()
+        except Exception as err:
+            logger.error(err)

@@ -231,9 +231,12 @@ class MagicCardClassifier(object):
                     batch_size=1,
                     verbose=1,
                     steps=pred_generator.n if not self.debug else 10
-                )
+                )[:, 0]
                 # Gather
-                df_result = pd.DataFrame({'preds': predictions, 'filenames': pred_generator.filenames}).\
+                df_result = pd.DataFrame({
+                    'preds': predictions,
+                    'filename': pred_generator.filenames if not self.debug else pred_generator.filenames[:10]
+                }).\
                     assign(ModelColor=model_color, CardColor=card_color)
                 df_results.append(df_result)
         df_results = pd.concat(df_results).reset_index(drop=True)
@@ -244,58 +247,53 @@ class MagicCardClassifier(object):
 
             # ROC Curve
             logger.info('ROC Curves.')
-            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
-            ax = ax.reshape(-1, 1)
+            fig, ax = plt.subplots(nrows=2, ncols=int(len(self.card_colors) / 2), figsize=(12, 12))
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
-                preds = df_model['preds'].values
-                y = (df_model['CardColor'] == color).values
+                preds = df_model['preds']
+                y = (df_model['CardColor'] == color).astype(int)
                 fpr, tpr, th = roc_curve(y, preds)
-                score = auc(y, preds)
+                score = auc(fpr, tpr)
 
-                ax[idx].plot(fpr, tpr, label='AUC: {a:0.2f}'.format(a=score))
-                ax[idx].plot([0, 1], [0, 1], color='black')
-                ax[idx].set_ylabel('True Positive Rate')
-                ax[idx].set_xlabel('False Positive Rate')
-                ax[idx].set_title(color)
-                ax[idx].legend()
-                ax[idx].grid(True)
+                ax[idx // 3, idx % 3].plot(fpr, tpr, label='AUC: {a:0.2f}'.format(a=score))
+                ax[idx // 3, idx % 3].plot([0, 1], [0, 1], color='black')
+                ax[idx // 3, idx % 3].set_ylabel('True Positive Rate')
+                ax[idx // 3, idx % 3].set_xlabel('False Positive Rate')
+                ax[idx // 3, idx % 3].set_title(color)
+                ax[idx // 3, idx % 3].legend()
+                ax[idx // 3, idx % 3].grid(True)
             plt.tight_layout()
             pdf.savefig()
             plt.close()
 
             # Precision / Recall
             logger.info('Precision / Recall.')
-            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
-            ax = ax.reshape(-1, 1)
+            fig, ax = plt.subplots(nrows=2, ncols=int(len(self.card_colors) / 2), figsize=(12, 12))
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
-                preds = df_model['preds'].values
-                y = (df_model['CardColor'] == color).values
+                preds = df_model['preds']
+                y = (df_model['CardColor'] == color).astype(int)
                 fpr, tpr, th = roc_curve(y, preds)
 
-                ax[idx].plot(th, fpr, label='False-Positive')
-                ax[idx].plot(th, tpr, label='True-Positive')
-                ax[idx].set_xlabel('Threshold')
-                ax[idx].set_title(color)
-                ax[idx].legend()
-                ax[idx].grid(True)
+                ax[idx // 3, idx % 3].plot(th, fpr, label='False-Positive')
+                ax[idx // 3, idx % 3].plot(th, tpr, label='True-Positive')
+                ax[idx // 3, idx % 3].set_xlabel('Threshold')
+                ax[idx // 3, idx % 3].set_title(color)
+                ax[idx // 3, idx % 3].legend()
+                ax[idx // 3, idx % 3].grid(True)
             plt.tight_layout()
             pdf.savefig()
             plt.close()
 
             # Histograms
             logger.info('Histograms.')
-            fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
-            ax = ax.reshape(-1, 1)
+            fig, ax = plt.subplots(nrows=2, ncols=int(len(self.card_colors) / 2), figsize=(12, 12))
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
-                preds = df_model['preds'].values
-                y = (df_model['CardColor'] == color).values
-
                 bins = np.linspace(0., 1., 40)
-                for y_val in set(y):
-                    ax[idx].hist(preds[y == y_val], label=y_val, density=True, alpha=0.5, bins=bins)
-                ax[idx].set_xlabel('Preds')
-                ax[idx].title(color)
-                ax[idx].grid(True)
+                for card_color, df_plot in df_model.groupby('CardColor'):
+                    ax[idx // 3, idx % 3].hist(df_model[df_model['CardColor'] == card_color]['preds'], label=card_color,
+                                               density=True, alpha=0.5, bins=bins)
+                ax[idx // 3, idx % 3].set_xlabel('Preds')
+                ax[idx // 3, idx % 3].set_title(color)
+                ax[idx // 3, idx % 3].grid(True)
             plt.tight_layout()
             pdf.savefig()
             plt.close()
@@ -337,14 +335,14 @@ class MagicCardClassifier(object):
             logger.info('Saving card samples.')
             for (model_color, card_color, sample_type), df_plot in df_samples. \
                     groupby(['ModelColor', 'CardColor', 'SampleType']):
-                card_dir = os.path.join(ROOT_DIR, 'data', 'curated', card_color, 'test', 'positive')
+                card_dir = os.path.join(ROOT_DIR, 'data', 'curated', card_color, 'validation')
 
                 fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 12))
-                ax = ax.reshape(-1, 1)
                 for idx, (filename, df_score) in enumerate(df_plot.groupby('filename')):
                     img = cv2.imread(os.path.join(card_dir, filename))
-                    ax[idx].imshow(img)
-                    ax[idx].set_title('{fn}, Score: {a:0.3f}'.format(fn=filename, a=df_score['preds'].iloc[0]))
+                    ax[idx // 2, idx % 2].imshow(img[:, :, [2, 1, 0]])
+                    ax[idx // 2, idx % 2].set_title('{fn}, Score: {a:0.3f}'.format(
+                        fn=filename, a=df_score['preds'].iloc[0]))
                 plt.axis('off')
                 plt.suptitle('Model: {}, Cards: {}, SampleType: {}'.format(model_color, card_color, sample_type))
                 pdf.savefig()
@@ -354,14 +352,14 @@ class MagicCardClassifier(object):
         """
         Save model
         """
-        logger.info('Saving Classifier.')
-        save_file = 'magic_card_classifier_{}_{}.pkl'.format(self.model_type, self.timestamp)
-        with open(os.path.join(ROOT_DIR, 'modeling', 'results', save_file), 'wb') as fp:
-            pickle.dump(self, fp)
+        logger.info('Saving Classifiers.')
+        for color, model in self.models.items():
+            save_file = 'magic_card_classifier_{}_{}_{}'.format(self.model_type, color, self.timestamp)
+            model.save(os.path.join(self.results_dir, save_file))
 
     def predict(self, input_dir: str) -> dict:
         """
         From a directory of images generate likelihood of each color then output a cardtype based on these.
         """
-        # Scoring plan:
+        # Scoring plan: Get pred for each color
         raise NotImplementedError
