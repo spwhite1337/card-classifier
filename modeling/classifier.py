@@ -168,7 +168,7 @@ class MagicCardClassifier(object):
                 raise ValueError('Incorrect model selection.')
 
             # Fit the model
-            model.fit(generator=train,
+            model.fit(x=train,
                       steps_per_epoch=train.n // train.batch_size,
                       validation_data=test,
                       validation_steps=test.n // test.batch_size,
