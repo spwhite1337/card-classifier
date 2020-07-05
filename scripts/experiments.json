@@ -1,3 +1,11 @@
-{
-   "model_type": ["VGG", "ResNet", "Inception"]
-}
+[
+   {
+   "model_type": "VGG"
+   },
+   {
+      "model_type": "ResNet"
+   },
+   {
+      "model_type": "Inception"
+   }
+]

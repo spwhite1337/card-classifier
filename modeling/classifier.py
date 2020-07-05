@@ -208,6 +208,7 @@ class MagicCardClassifier(object):
                 as pdf:
 
             # ROC Curve
+            logger.info('ROC Curves.')
             fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
             ax = ax.reshape(-1, 1)
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
@@ -228,6 +229,7 @@ class MagicCardClassifier(object):
             plt.close()
 
             # Precision / Recall
+            logger.info('Precision / Recall.')
             fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
             ax = ax.reshape(-1, 1)
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
@@ -246,6 +248,7 @@ class MagicCardClassifier(object):
             plt.close()
 
             # Histograms
+            logger.info('Histograms.')
             fig, ax = plt.subplots(nrows=3, ncols=int(len(self.card_colors) / 3), figsize=(12, 12))
             ax = ax.reshape(-1, 1)
             for idx, (color, df_model) in enumerate(df_results.groupby('ModelColor')):
@@ -267,6 +270,7 @@ class MagicCardClassifier(object):
                 as pdf:
 
             # Sample images for each model
+            logger.info('Getting Select Examples.')
             df_samples = []
             for color in set(df_results['ModelColor']):
                 # True Positive, high scoring cards of this color
@@ -295,6 +299,7 @@ class MagicCardClassifier(object):
             df_samples = pd.concat(df_samples).reset_index(drop=True)
 
             # Plot cards
+            logger.info('Saving card samples.')
             for (model_color, card_color, sample_type), df_plot in df_samples. \
                     groupby(['ModelColor', 'CardColor', 'SampleType']):
                 card_dir = os.path.join(ROOT_DIR, 'data', 'curated', card_color, 'test', 'positive')
@@ -314,6 +319,7 @@ class MagicCardClassifier(object):
         """
         Save model
         """
+        logger.info('Saving Classifier.')
         save_file = 'magic_card_classifier_{}.pkl'.format(self.timestamp)
         with open(os.path.join(ROOT_DIR, 'modeling', 'results', save_file), 'wb') as fp:
             pickle.dump(self, fp)
