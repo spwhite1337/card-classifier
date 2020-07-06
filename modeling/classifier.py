@@ -395,11 +395,14 @@ class MagicCardClassifier(object):
                     verbose=1,
                     steps=pred_generator.n
                 )[:, 0],
-                'filenames': pred_generator.filenames
             } for color in self.card_colors
         }
 
         # Wrangle outputs so that primary key is filename, values are dict with keys as colors and vals as preds
-        print(preds_by_color)
+        output = {}
+        for idx, fn in enumerate(pred_generator.filenames):
+            output[fn] = {color: preds_by_color[color]['preds'][idx] for color in preds_by_color.keys()}
 
-        return preds_by_color
+        print(output)
+
+        return output
