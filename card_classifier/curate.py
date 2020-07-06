@@ -140,14 +140,14 @@ def curate_images():
     # Get card colors
     card_colors = [d for d in os.listdir(RAW_DIR) if '.csv' not in d]
 
-    # # Crop images
-    # crop_images(card_colors, RAW_DIR, CROPPED_DIR)
-    #
-    # # Sort Images
-    # sort_images(card_colors, CROPPED_DIR, CURATED_DIR)
-    #
-    # # Split for a test set
-    # split_images(card_colors, CURATED_DIR, args.split)
+    # Crop images
+    crop_images(card_colors, RAW_DIR, CROPPED_DIR)
+
+    # Sort Images
+    sort_images(card_colors, CROPPED_DIR, CURATED_DIR)
+
+    # Split for a test set
+    split_images(card_colors, CURATED_DIR, args.split)
 
     # Duplicate training images as black and white
     convert_to_bw(card_colors, CURATED_DIR)
