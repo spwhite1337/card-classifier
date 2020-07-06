@@ -43,9 +43,9 @@ class MagicCardClassifier(object):
 
     def __init__(self,
                  # Processing
-                 zoom_range: bool = True,
+                 zoom_range: bool = False,
                  horizontal_flip: bool = True,
-                 brightness_range: bool = True,
+                 brightness_range: bool = False,
 
                  # Training
                  model_type: str = 'VGG',
