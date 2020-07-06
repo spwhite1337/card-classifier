@@ -91,8 +91,8 @@ class MagicCardClassifier(object):
         # Set up training data generator with augmentation
         train_datagen = ImageDataGenerator(
             rescale=1/255.,
-            zoom_range=0.15 if self.zoom_range else None,
-            horizontal_flip=True if self.horizontal_flip else None,
+            zoom_range=0.15 if self.zoom_range else 0.,
+            horizontal_flip=True if self.horizontal_flip else False,
             brightness_range=[0.9, 1.1] if self.brightness_range else None,
             data_format='channels_last',
         )
