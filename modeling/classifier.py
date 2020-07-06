@@ -397,7 +397,7 @@ class MagicCardClassifier(object):
                     logger.info('Skipping {} because it does not have RGB Channel.'.format(img_path))
                     continue
                 # Resize
-                img = cv2.resize(img, (self.target_size[0], self.target_size[1], 3))
+                img = cv2.resize(img, self.target_size)
                 imgs.append((img_path, img))
 
             # Generate predictions
@@ -418,7 +418,7 @@ class MagicCardClassifier(object):
             if (len(img.shape) != 3) or img.shape[2] != 3:
                 raise ValueError('Skipping because it does not have RGB Channel.')
             # Resize
-            img = cv2.resize(img, (self.target_size[0], self.target_size[1], 3))
+            img = cv2.resize(img, self.target_size)
 
             # Get predictions
             output = [{
