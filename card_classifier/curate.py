@@ -88,6 +88,21 @@ def split_images(colors: list, curated_dir: str, split: float):
                 shutil.move(src_file, dst_file)
 
 
+def convert_to_bw(colors: list, curated_dir: str):
+    """
+    Convert training data to a black and white
+    """
+    for color in colors:
+        train_dir = os.path.join(curated_dir, color, 'train')
+        for cls in ['positive', 'negative']:
+            logger.info('Converting {}, {} to black white'.format(color, cls))
+            base_dir = os.path.join(train_dir, cls)
+            for img_path in tqdm(os.listdir(base_dir)):
+                img = cv2.imread(os.path.join(base_dir, img_path))
+                img_bw = cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+                cv2.imwrite(os.path.join(base_dir, 'BW' + img_path), img_bw)
+
+
 def count_cards(curated_dir: str = None):
     """
     Count cards in sorted directories
@@ -125,14 +140,17 @@ def curate_images():
     # Get card colors
     card_colors = [d for d in os.listdir(RAW_DIR) if '.csv' not in d]
 
-    # Crop images
-    crop_images(card_colors, RAW_DIR, CROPPED_DIR)
+    # # Crop images
+    # crop_images(card_colors, RAW_DIR, CROPPED_DIR)
+    #
+    # # Sort Images
+    # sort_images(card_colors, CROPPED_DIR, CURATED_DIR)
+    #
+    # # Split for a test set
+    # split_images(card_colors, CURATED_DIR, args.split)
 
-    # Sort Images
-    sort_images(card_colors, CROPPED_DIR, CURATED_DIR)
-
-    # Split for a test set
-    split_images(card_colors, CURATED_DIR, args.split)
+    # Duplicate training images as black and white
+    convert_to_bw(card_colors, CURATED_DIR)
 
     # Count cards at the end for quality assurance
     count_cards(CURATED_DIR)
