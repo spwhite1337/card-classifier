@@ -44,7 +44,7 @@ class MagicCardClassifier(object):
     def __init__(self,
                  # Processing
                  zoom_range: bool = False,
-                 horizontal_flip: bool = True,
+                 horizontal_flip: bool = False,
                  brightness_range: bool = False,
 
                  # Training
