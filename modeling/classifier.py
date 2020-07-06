@@ -47,7 +47,6 @@ class MagicCardClassifier(object):
                  zoom_range: bool = True,
                  horizontal_flip: bool = True,
                  brightness_range: bool = True,
-                 color_change: bool = True,
 
                  # Training
                  model_type: str = 'VGG',
@@ -66,7 +65,6 @@ class MagicCardClassifier(object):
         self.zoom_range = zoom_range
         self.horizontal_flip = horizontal_flip
         self.brightness_range = brightness_range
-        self.color_change = color_change
 
         # Training
         self.model_type = model_type
@@ -91,12 +89,6 @@ class MagicCardClassifier(object):
         """
         Set up Keras generators for augmented data
         """
-        # processing function to change color scheme of input data
-        def color_change(image):
-            image = np.array(image)
-            hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-            return Image.fromarray(hsv_image)
-
         # Set up training data generator with augmentation
         train_datagen = ImageDataGenerator(
             rescale=1/255.,
@@ -104,7 +96,6 @@ class MagicCardClassifier(object):
             horizontal_flip=True if self.horizontal_flip else None,
             brightness_range=[0.9, 1.1] if self.brightness_range else None,
             data_format='channels_last',
-            # preprocessing_function=color_change if self.color_change else None
         )
         train_generator = train_datagen.flow_from_directory(
             directory=os.path.join(self.curated_dir, color, 'train'),
