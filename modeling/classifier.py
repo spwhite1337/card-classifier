@@ -2,7 +2,6 @@ import os
 import cv2
 from typing import Tuple
 
-from PIL import Image
 import pandas as pd
 import numpy as np
 
@@ -379,19 +378,19 @@ class MagicCardClassifier(object):
 
         # Get predictions
         preds_by_color = {
-            color:  {
-                'preds': self.models[color].predict(
+            color: self.models[color].predict(
                     x=pred_generator,
                     batch_size=1,
                     verbose=1,
                     steps=pred_generator.n
-                )[:, 0],
-            } for color in self.card_colors
+                )[:, 0] for color in self.card_colors
         }
 
         # Wrangle outputs so that primary key is filename, values are dict with keys as colors and vals as preds
-        output = {}
-        for idx, fn in enumerate(pred_generator.filenames):
-            output[fn] = {color: preds_by_color[color]['preds'][idx] for color in preds_by_color.keys()}
+        output = {
+            fn: {
+                color: preds[idx] for color, preds in preds_by_color.items()
+            } for idx, fn in enumerate(pred_generator.filenames)
+        }
 
         return output
