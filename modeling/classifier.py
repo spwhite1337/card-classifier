@@ -80,10 +80,12 @@ class MagicCardClassifier(object):
         self.results_dir: str = results_dir
 
         # Load
+        self.models = {}
         if load:
-            pass
-        else:
-            self.models = {}
+            for color in self.card_colors:
+                self.models[color] = load_model(
+                    filepath=os.path.join(self.results_dir, '{}_{}_{}'.format(self.model_type, color, self.version))
+                )
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
