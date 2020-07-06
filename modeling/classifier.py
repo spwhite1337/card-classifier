@@ -194,7 +194,7 @@ class MagicCardClassifier(object):
             early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
                                           cooldown=2)
-            callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else []
+            callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else [csv_logger]
 
             # Fit the model
             model.fit(x=train,
@@ -202,7 +202,7 @@ class MagicCardClassifier(object):
                       validation_data=test,
                       validation_steps=test.n // test.batch_size if not self.debug else 10,
                       class_weight=self._class_weights(color),
-                      epochs=self.epochs if not self.debug else 1,
+                      epochs=self.epochs if not self.debug else 3,
                       verbose=1,
                       callbacks=callbacks)
 
@@ -242,6 +242,30 @@ class MagicCardClassifier(object):
         # Plots
         with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}_{}.pdf'.format(self.model_type, self.version))) \
                 as pdf:
+            # Training Logs
+            logger.info('Training Logs.')
+            for metric in ['loss', 'auc']:
+                fig, ax = plt.subplots(nrows=2, ncols=int(len(self.card_colors) / 2), figsize=(12, 12))
+                for idx, color in enumerate(self.card_colors):
+                    log_path = os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
+                        color, self.model_type, self.version
+                    ))
+                    if not os.path.exists(log_path):
+                        continue
+                    df_logs = pd.read_csv(log_path)
+                    # Force column names
+                    df_logs.columns = ['epoch', 'auc', 'loss', 'val_auc', 'val_loss']
+
+                    # Plot
+                    ax[idx // 3, idx % 3].plot(df_logs['epoch'], df_logs[metric], label='training')
+                    ax[idx // 3, idx % 3].plot(df_logs['epoch'], df_logs['val_' + metric], label='test')
+                    ax[idx // 3, idx % 3].legend()
+                    ax[idx // 3, idx % 3].set_xlabel('Epoch')
+                    ax[idx // 3, idx % 3].set_ylabel(metric)
+                    ax[idx // 3, idx % 3].set_title(color)
+                plt.tight_layout()
+                pdf.savefig()
+                plt.close()
 
             # ROC Curve
             logger.info('ROC Curves.')
@@ -341,6 +365,7 @@ class MagicCardClassifier(object):
                     ax[idx // 2, idx % 2].imshow(img[:, :, [2, 1, 0]])
                     ax[idx // 2, idx % 2].set_title('{fn}, Score: {a:0.3f}'.format(
                         fn=filename, a=df_score['preds'].iloc[0]))
+                    ax[idx // 2, idx % 2].set_xticks([], minor=True)
                 plt.axis('off')
                 plt.suptitle('Model: {}, Cards: {}, SampleType: {}'.format(model_color, card_color, sample_type))
                 pdf.savefig()
