@@ -132,13 +132,13 @@ class MagicCardClassifier(object):
 
         return train_generator, test_generator
 
-    def _prediction_generator(self, color: str):
+    def _prediction_generator(self, input_dir: str):
         """
         Create a Keras generator for predictions
         """
         predict_datagen = ImageDataGenerator(rescale=1/255.)
         predict_generator = predict_datagen.flow_from_directory(
-            directory=os.path.join(self.curated_dir, color, 'validation'),
+            directory=input_dir,
             target_size=self.target_size,
             color_mode='rgb',
             classes=None,
@@ -231,7 +231,7 @@ class MagicCardClassifier(object):
         for model_color, model in self.models.items():
             for card_color in self.card_colors:
                 # Get generator
-                pred_generator = self._prediction_generator(card_color)
+                pred_generator = self._prediction_generator(os.path.join(self.curated_dir, card_color, 'validation'))
                 # Predict
                 logger.info('Predicting {} images in {} with {}'.format(pred_generator.n, card_color, model_color))
                 predictions = model.predict(
@@ -375,57 +375,31 @@ class MagicCardClassifier(object):
             load_file = '{}_{}_{}'.format(self.model_type, color, self.version)
             self.models[color] = load_model(os.path.join(self.results_dir, load_file), compile=True)
 
-    def predict(self, input_path: str) -> list:
+    def predict(self, input_path: str) -> dict:
         """
         From a directory of images or single path generate likelihood of each color
+        input_path should point to a directory containing a subdirectory of images to predict
         """
         if self.models is None:
             self.load()
 
-        # Organize as list of images
-        imgs = []
-        if os.path.isdir(input_path):
-            for img_path in os.listdir(input_path):
-                # Skip if not a file
-                if not os.path.isfile(os.path.join(input_path, img_path)):
-                    continue
-                img = cv2.imread(os.path.join(input_path, img_path))
-                if img is None:
-                    logger.info('Skipping {} because it didn\'t load properly.'.format(img_path))
-                    continue
-                if (len(img.shape) != 3) or img.shape[2] != 3:
-                    logger.info('Skipping {} because it does not have RGB Channel.'.format(img_path))
-                    continue
-                # Resize
-                img = cv2.resize(img, self.target_size)
-                imgs.append((img_path, img))
+        # Make generator
+        pred_generator = self._prediction_generator(input_path)
 
-            # Generate predictions
-            outputs = [{
-                img[0]: {
-                    color: self.models[color].predict(x=img[1], batch_size=1, verbose=1, steps=1)
-                    for color in self.card_colors
-                }
-            } for img in imgs]
+        # Get predictions
+        preds_by_color = {
+            color:  {
+                'preds': self.models[color].predict(
+                    x=pred_generator,
+                    batch_size=1,
+                    verbose=1,
+                    steps=pred_generator.n
+                )[:, 0],
+                'filenames': pred_generator.filenames
+            } for color in self.card_colors
+        }
 
-            return outputs
+        # Wrangle outputs so that primary key is filename, values are dict with keys as colors and vals as preds
+        print(preds_by_color)
 
-        else:
-            # Load
-            img = cv2.imread(input_path)
-            if img is None:
-                raise ValueError('Skipping because it didn\'t load properly.')
-            if (len(img.shape) != 3) or img.shape[2] != 3:
-                raise ValueError('Skipping because it does not have RGB Channel.')
-            # Resize
-            img = cv2.resize(img, self.target_size)
-
-            # Get predictions
-            output = [{
-                input_path: {
-                    color: self.models[color].predict(x=img, batch_size=1, verbose=1, steps=1)
-                    for color in self.card_colors
-                }
-            }]
-
-            return output
+        return preds_by_color
