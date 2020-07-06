@@ -15,11 +15,16 @@ def predict_cli():
 
 
 def predict(version: str, model_type: str, input_path: str, save_path: str = None):
+    """
+    Predict from trained models
+    """
     # Instantiate classifier and load models
     mcc = MagicCardClassifier(version=version, model_type=model_type, load=True)
 
     # Predict
     outputs = mcc.predict(input_path)
+
+    # Save outputs
     if save_path:
         with open(save_path, 'wb') as fp:
             pickle.dump(outputs, fp)
