@@ -403,6 +403,4 @@ class MagicCardClassifier(object):
         for idx, fn in enumerate(pred_generator.filenames):
             output[fn] = {color: preds_by_color[color]['preds'][idx] for color in preds_by_color.keys()}
 
-        print(output)
-
         return output
