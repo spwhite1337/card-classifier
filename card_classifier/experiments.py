@@ -14,7 +14,7 @@ def run_experiments():
     args = parser.parse_args()
 
     # Load experiments
-    with open(os.path.join(os.getcwd(), 'scripts', 'experiments.json')) as f:
+    with open(os.path.join(os.getcwd(), 'card_classifier', 'experiments.json')) as f:
         experiments = json.load(f)
 
     if args.debug:
