@@ -1,13 +1,10 @@
 import os
 import cv2
-import time
-import pickle
 from typing import Tuple
 
 from PIL import Image
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
 
 
 import matplotlib.pyplot as plt
@@ -15,7 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import TensorBoard, CSVLogger, EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.applications import ResNet50, InceptionV3, VGG16
 from tensorflow.keras.layers import Flatten, Dense
 from tensorflow.keras.optimizers import Adam
@@ -57,6 +54,8 @@ class MagicCardClassifier(object):
 
                  # I/O
                  debug: bool = False,
+                 load: bool = False,
+                 version: str = 'v0',
                  results_dir: str = os.path.join(ROOT_DIR, 'modeling', 'results')
                  ):
 
@@ -75,9 +74,9 @@ class MagicCardClassifier(object):
 
         # I/O
         self.debug = debug
+        self.version = version
         self.results_dir: str = results_dir
         self.models = {}
-        self.timestamp = str(int(time.time()))
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
@@ -192,7 +191,7 @@ class MagicCardClassifier(object):
             # Callbacks
             tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
             csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
-                color, self.model_type, self.timestamp)), separator=',', append=False)
+                color, self.model_type, self.version)), separator=',', append=False)
             early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
                                           cooldown=2)
@@ -242,7 +241,7 @@ class MagicCardClassifier(object):
         df_results = pd.concat(df_results).reset_index(drop=True)
 
         # Plots
-        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}_{}.pdf'.format(self.model_type, self.timestamp))) \
+        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}_{}.pdf'.format(self.model_type, self.version))) \
                 as pdf:
 
             # ROC Curve
@@ -299,7 +298,7 @@ class MagicCardClassifier(object):
             plt.close()
 
         # Card samples
-        with PdfPages(os.path.join(self.results_dir, 'samples_{}_{}.pdf'.format(self.model_type, self.timestamp))) \
+        with PdfPages(os.path.join(self.results_dir, 'samples_{}_{}.pdf'.format(self.model_type, self.version))) \
                 as pdf:
 
             # Sample images for each model
@@ -350,16 +349,74 @@ class MagicCardClassifier(object):
 
     def save(self):
         """
-        Save model
+        Save models
         """
         logger.info('Saving Classifiers.')
         for color, model in self.models.items():
-            save_file = 'magic_card_classifier_{}_{}_{}'.format(self.model_type, color, self.timestamp)
+            save_file = '{}_{}_{}'.format(self.model_type, color, self.version)
             model.save(os.path.join(self.results_dir, save_file))
 
-    def predict(self, input_dir: str) -> dict:
+    def load(self):
         """
-        From a directory of images generate likelihood of each color then output a cardtype based on these.
+        Load models
         """
-        # Scoring plan: Get pred for each color
-        raise NotImplementedError
+        logger.info('Loading Classifiers.')
+        self.models = {}
+        for color in self.card_colors:
+            load_file = '{}_{}_{}'.format(self.model_type, color, self.version)
+            self.models[color] = load_model(os.path.join(self.results_dir, load_file), compile=True)
+
+    def predict(self, input_path: str) -> list:
+        """
+        From a directory of images or single path generate likelihood of each color
+        """
+        if self.models is None:
+            self.load()
+
+        # Organize as list of images
+        imgs = []
+        if os.path.isdir(input_path):
+            for img_path in os.listdir(input_path):
+                # Skip if not a file
+                if not os.path.isfile(os.path.join(input_path, img_path)):
+                    continue
+                img = cv2.imread(os.path.join(input_path, img_path))
+                if img is None:
+                    logger.info('Skipping {} because it didn\'t load properly.'.format(img_path))
+                    continue
+                if (len(img.shape) != 3) or img.shape[2] != 3:
+                    logger.info('Skipping {} because it does not have RGB Channel.'.format(img_path))
+                    continue
+                # Resize
+                img = cv2.resize(img, (self.target_size[0], self.target_size[1], 3))
+                imgs.append((img_path, img))
+
+            # Generate predictions
+            outputs = [{
+                img[0]: {
+                    color: self.models[color].predict(x=img[1], batch_size=1, verbose=1, steps=1)
+                    for color in self.card_colors
+                }
+            } for img in imgs]
+
+            return outputs
+
+        else:
+            # Load
+            img = cv2.imread(input_path)
+            if img is None:
+                raise ValueError('Skipping because it didn\'t load properly.')
+            if (len(img.shape) != 3) or img.shape[2] != 3:
+                raise ValueError('Skipping because it does not have RGB Channel.')
+            # Resize
+            img = cv2.resize(img, (self.target_size[0], self.target_size[1], 3))
+
+            # Get predictions
+            output = [{
+                input_path: {
+                    color: self.models[color].predict(x=img, batch_size=1, verbose=1, steps=1)
+                    for color in self.card_colors
+                }
+            }]
+
+            return output
