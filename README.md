@@ -27,7 +27,9 @@ input images.
 
 # Predictions
 
-- 
+- Run `cc_predictions --model_type VGG --version v0 --input_path ./samples` to generate sample predictions
+- Note: samples images should reside in a subdirectory of in the input_path
+- Output is a dictionary with keys as filenames and values as a dictionary with keys as color and values as predictions
 
 
 
