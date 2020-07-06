@@ -365,8 +365,6 @@ class MagicCardClassifier(object):
                     ax[idx // 2, idx % 2].imshow(img[:, :, [2, 1, 0]])
                     ax[idx // 2, idx % 2].set_title('{fn}, Score: {a:0.3f}'.format(
                         fn=filename, a=df_score['preds'].iloc[0]))
-                    ax[idx // 2, idx % 2].set_xticks([], minor=True)
-                plt.axis('off')
                 plt.suptitle('Model: {}, Cards: {}, SampleType: {}'.format(model_color, card_color, sample_type))
                 pdf.savefig()
                 plt.close()
