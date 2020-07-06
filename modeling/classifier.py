@@ -24,7 +24,9 @@ from config import ROOT_DIR, logger
 
 
 class MagicCardClassifier(object):
-
+    """
+    Object to train, diagnose, and predict magic card colors from images.
+    """
     # All colors to train on
     card_colors = ['B', 'G', 'N', 'R', 'U', 'W']
 
@@ -38,13 +40,14 @@ class MagicCardClassifier(object):
         'Inception': InceptionV3,
     }
 
+    target_size: Tuple = (128, 128)
+
     def __init__(self,
                  # Processing
                  zoom_range: bool = True,
                  horizontal_flip: bool = True,
                  brightness_range: bool = True,
                  color_change: bool = True,
-                 target_size: Tuple = (128, 128),
 
                  # Training
                  model_type: str = 'VGG',
@@ -64,7 +67,6 @@ class MagicCardClassifier(object):
         self.horizontal_flip = horizontal_flip
         self.brightness_range = brightness_range
         self.color_change = color_change
-        self.target_size = target_size
 
         # Training
         self.model_type = model_type
@@ -76,7 +78,12 @@ class MagicCardClassifier(object):
         self.debug = debug
         self.version = version
         self.results_dir: str = results_dir
-        self.models = {}
+
+        # Load
+        if load:
+            pass
+        else:
+            self.models = {}
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """

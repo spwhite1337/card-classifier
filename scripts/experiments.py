@@ -10,6 +10,7 @@ from config import logger
 def run_experiments():
     parser = argparse.ArgumentParser(prog='Card Classifier Experiments')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--version', type=str, default='v0')
     args = parser.parse_args()
 
     # Load experiments
@@ -17,11 +18,12 @@ def run_experiments():
         experiments = json.load(f)
 
     if args.debug:
-        experiments = [{'debug': True, 'version': 'v0'}]
+        experiments = [{'debug': True}]
+        args.version = 'v0'
 
     # Iterate through experiments
     for experiment in experiments:
-        mcc = MagicCardClassifier(**experiment)
+        mcc = MagicCardClassifier(version=args.version, **experiment)
         try:
             mcc.train()
             mcc.diagnose()

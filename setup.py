@@ -11,7 +11,8 @@ setup(
         'cc_download_magic = scripts.download:download_magic',
         'cc_curate_images = scripts.curate:curate_images',
         'cc_count_cards = scripts.curate:count_cards',
-        'cc_run_experiments = scripts.experiments:run_experiments'
+        'cc_run_experiments = scripts.experiments:run_experiments',
+        'cc_predictions = scripts.predictions:predict'
     ]},
     install_requires=[
         'pandas',
