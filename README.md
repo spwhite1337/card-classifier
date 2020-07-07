@@ -1,13 +1,11 @@
 # Card Classifier
 
-Buzzfeed style app that outputs the card color for Magic The Gathering from an
-input images. 
+Buzzfeed style app that outputs the card color for Magic The Gathering from an input image. 
 
 # Procedure
 
 - `cd card-classifier`
 - `pip install -e .`
-- [Download data]
 
 # Data
 
@@ -23,12 +21,12 @@ input images.
 
 # Diagnostics
 
-- The experiments output a diagnostics report and sample cards to `modeling/results/`
+- The experiment output a diagnostics report and sample cards to `modeling/results/`
 
 # Predictions
 
 - Run `cc_predictions --model_type VGG --version v1 --input_path ./samples` to generate sample predictions
-- Note: samples images should reside in a subdirectory of in the input_path
+- Note: samples images should reside in a subdirectory in the input_path
 - Output is a dictionary with keys as filenames and values as a dictionary with keys as color and values as predictions
 
 
