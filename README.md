@@ -15,7 +15,7 @@ Buzzfeed style app that outputs the card color for Magic The Gathering from an i
 
 # Train
 
-- Configure experiments in `scripts/experiments.json`
+- Configure experiments in `card_classifier/experiments.json`
 - Run `cc_run_experiments`
 - Optional: Run `cc_run_experiments --debug` for a minimal working model. 
 
