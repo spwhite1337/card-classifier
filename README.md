@@ -21,7 +21,7 @@ Buzzfeed style app that outputs the card color for Magic The Gathering from an i
 
 # Diagnostics
 
-- The experiment output a diagnostics report and sample cards to `modeling/results/`
+- The experiments output a diagnostics report and sample cards to `modeling/results/`
 
 # Predictions
 
