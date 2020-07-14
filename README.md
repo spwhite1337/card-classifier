@@ -7,28 +7,28 @@ The models are each "One vs. All" for each mana class (Green, White, Blue, Black
 consideration of the input's likelihood of being a magic card. This approach assumes it already is a magic card, just
 of an uncertain mana class (Like a Buzzfeed Quiz that already assumes you're a Harry Potter character).
 
-# Procedure
+## Procedure
 
 - `cd card-classifier`
 - `pip install -e .`
 
-# Data
+## Data
 
 - Download raw data locally with `cc_download_magic`
 - Curate data to crop down to artwork with `cc_curate_images`
 - Optional: Run `cc_count_cards` to count the cards in each category
 
-# Train
+## Train
 
 - Configure experiments in `card_classifier/experiments.json`
 - Run `cc_run_experiments`
 - Optional: Run `cc_run_experiments --debug` for a minimal working model. 
 
-# Diagnostics
+## Diagnostics
 
 - The experiments output a diagnostics report and sample cards to `modeling/results/`
 
-# Predictions
+## Predictions
 
 - Run `cc_predictions --model_type VGG --version v1 --input_path ./samples` to generate sample predictions
 - Note: samples images should reside in a subdirectory in the input_path
