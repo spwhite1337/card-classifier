@@ -15,6 +15,7 @@ of an uncertain mana class (Like a Buzzfeed Quiz that already assumes you're a H
 ## Data
 
 - Download raw data locally with `cc_download_magic`
+    - The images are extracted from this API: https://mtgjson.com/. Consider donating to support open source projects.
 - Curate data to crop down to artwork with `cc_curate_images`
 - Optional: Run `cc_count_cards` to count the cards in each category
 
