@@ -14,7 +14,7 @@ def api_cli():
     args = parser.parse_args()
 
     api(version=args.version, model_type=args.model_type, input_path=args.input_path, save_path=args.save_path,
-            display_output=args.display_output)
+        display_output=args.display_output)
 
 
 def api(version: str, model_type: str, input_path: str, save_path: str = None, display_output: bool = False):
