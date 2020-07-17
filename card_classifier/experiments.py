@@ -2,7 +2,7 @@ import os
 import json
 import argparse
 
-from modeling.classifier import MagicCardClassifier
+from card_classifier.classifier import MagicCardClassifier
 
 from config import logger
 

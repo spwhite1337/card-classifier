@@ -1,7 +1,7 @@
 import pickle
 import pprint
 import argparse
-from modeling.classifier import MagicCardClassifier
+from card_classifier.classifier import MagicCardClassifier
 
 
 def predict_cli():
