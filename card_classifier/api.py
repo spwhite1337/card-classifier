@@ -4,7 +4,7 @@ import argparse
 from card_classifier.classifier import MagicCardClassifier
 
 
-def predict_cli():
+def api_cli():
     parser = argparse.ArgumentParser(prog='Predict from Magic Card Classifier')
     parser.add_argument('--input_path', type=str, required=True)
     parser.add_argument('--version', type=str, default='v1')
@@ -17,7 +17,7 @@ def predict_cli():
             display_output=args.display_output)
 
 
-def predict(version: str, model_type: str, input_path: str, save_path: str = None, display_output: bool = False):
+def api(version: str, model_type: str, input_path: str, save_path: str = None, display_output: bool = False):
     """
     Predict from trained models
     """
