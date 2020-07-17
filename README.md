@@ -10,7 +10,7 @@ of an uncertain mana class (Like a Buzzfeed Quiz that already assumes you're a H
 Note: To predict whether or not an input image is a magic card one could create a classifier with all of these images 
 in the positive class and something like COCO or ImageNet images in the negative class. I might do this later.
 
-![MTG Logo](/docs/mtg_logo.png "MTG Logo")
+<img src="/docs/mtg_logo.png alt="MTG Logo" width="256">
 
 ## Procedure
 
