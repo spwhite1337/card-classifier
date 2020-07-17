@@ -19,7 +19,7 @@ from tensorflow.keras.metrics import AUC
 
 from sklearn.metrics import auc, roc_curve
 
-from config import ROOT_DIR, logger
+from config import Config, logger
 
 
 class MagicCardClassifier(object):
@@ -30,7 +30,7 @@ class MagicCardClassifier(object):
     card_colors = ['B', 'G', 'N', 'R', 'U', 'W']
 
     # Curated dir
-    curated_dir = os.path.join(ROOT_DIR, 'data', 'curated')
+    curated_dir = Config.CURATED_DIR
 
     # Models
     model_options = {
@@ -57,7 +57,7 @@ class MagicCardClassifier(object):
                  debug: bool = False,
                  load: bool = False,
                  version: str = 'v0',
-                 results_dir: str = os.path.join(ROOT_DIR, 'modeling', 'results')
+                 results_dir: str = Config.RESULTS_DIR
                  ):
 
         # Processing

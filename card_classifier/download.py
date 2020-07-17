@@ -1,10 +1,9 @@
 import os
-import json
 import requests
 import pandas as pd
 from tqdm import tqdm
 
-from config import logger, ROOT_DIR
+from config import Config, logger
 
 
 def get_mtg_metadata() -> dict:
@@ -61,7 +60,7 @@ def _download_magic(metadata: pd.DataFrame) -> pd.DataFrame:
     """
     Download cards from web and save in data/
     """
-    save_dir = os.path.join(ROOT_DIR, 'data', 'mtg_images')
+    save_dir = Config.RAW_DIR
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
@@ -100,6 +99,6 @@ def download_magic():
     df_failed = _download_magic(metadata)
     logger.info('Failed to download {} images.'.format(df_failed.shape[0]))
     logger.info('Saving Metadata')
-    metadata.to_csv(os.path.join(ROOT_DIR, 'data', 'mtg_images', 'metadata.csv'), index=False)
+    metadata.to_csv(os.path.join(Config.RAW_DIR, 'metadata.csv'), index=False)
     logger.info('Saving Failed Images info.')
-    df_failed.to_csv(os.path.join(ROOT_DIR, 'data', 'mtg_images', 'failed_images.csv'), index=False)
+    df_failed.to_csv(os.path.join(Config.RAW_DIR, 'failed_images.csv'), index=False)

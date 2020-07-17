@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 
-from config import ROOT_DIR, logger
+from config import Config, logger
 
 random.seed(187)
 
@@ -108,7 +108,7 @@ def count_cards(curated_dir: str = None):
     Count cards in sorted directories
     """
     if curated_dir is None:
-        curated_dir = os.path.join(ROOT_DIR, 'data', 'curated')
+        curated_dir = Config.CURATED_DIR
     if not os.path.exists(curated_dir):
         return
 
@@ -131,11 +131,11 @@ def curate_images():
     args = parser.parse_args()
 
     # Set up dirs
-    RAW_DIR = os.path.join(ROOT_DIR, 'data', 'mtg_images')
+    RAW_DIR = Config.RAW_DIR
     if not os.path.exists(RAW_DIR):
         raise FileNotFoundError('Download raw data first.')
-    CROPPED_DIR = _make_dir(os.path.join(ROOT_DIR, 'data', 'cropped'))
-    CURATED_DIR = _make_dir(os.path.join(ROOT_DIR, 'data', 'curated'))
+    CROPPED_DIR = _make_dir(Config.CROPPED_DIR)
+    CURATED_DIR = _make_dir(Config.CURATED_DIR)
 
     # Get card colors
     card_colors = [d for d in os.listdir(RAW_DIR) if '.csv' not in d]

@@ -13,4 +13,9 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class Config(object):
-    pass
+    ROOT_DIR = ROOT_DIR
+    RAW_DIR = os.path.join(ROOT_DIR, 'data', 'mtg_images')
+    CROPPED_DIR = os.path.join(ROOT_DIR, 'data', 'cropped')
+    CURATED_DIR = os.path.join(ROOT_DIR, 'data', 'curated')
+    RESULTS_DIR = os.path.join(ROOT_DIR, 'results')
+    version = 'v1'
