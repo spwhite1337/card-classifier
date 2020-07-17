@@ -30,7 +30,7 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 ## Diagnostics
 
-- The experiments output a diagnostics report and sample cards to `modeling/results/`
+- The experiments output a diagnostics report and sample cards to `results/`
 
 ## Predictions
 
