@@ -100,11 +100,11 @@ def download_magic():
     if args.aws:
         logger.info('Downloading Data from AWS')
         include_flags = '--exclude * --include cropped/*.jpg --include curated/*.jpg --include mtg_images/*'
-        aws_sync = 'aws s3 {} {} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR, include_flags)
+        aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR, include_flags)
         os.system(aws_sync)
         logger.info('Downloading Results from AWS')
         include_flags = '--exclude * --include variables.index --include variables.data-* --include saved_model.pb'
-        aws_sync = 'aws s3 {} {} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR, include_flags)
+        aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR, include_flags)
         os.system(aws_sync)
     else:
         logger.info('Downloading Metadata')
