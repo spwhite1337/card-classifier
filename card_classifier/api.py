@@ -13,7 +13,7 @@ def api_cli():
     parser.add_argument('--display_output', action='store_true')
     args = parser.parse_args()
 
-    predict(version=args.version, model_type=args.model_type, input_path=args.input_path, save_path=args.save_path,
+    api(version=args.version, model_type=args.model_type, input_path=args.input_path, save_path=args.save_path,
             display_output=args.display_output)
 
 
