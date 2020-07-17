@@ -12,7 +12,8 @@ setup(
         'cc_curate_images = card_classifier.curate:curate_images',
         'cc_count_cards = card_classifier.curate:count_cards',
         'cc_run_experiments = card_classifier.experiments:run_experiments',
-        'cc_predictions = card_classifier.predictor:predict_cli'
+        'cc_predictions = card_classifier.predictor:predict_cli',
+        'cc_upload = card_classifier.upload:upload'
     ]},
     install_requires=[
         'pandas',
@@ -26,6 +27,7 @@ setup(
         'tensorflow',
         'Keras',
         'scikit-learn',
-        'tqdm'
+        'tqdm',
+        'awscli'
     ]
 )

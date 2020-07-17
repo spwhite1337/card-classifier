@@ -14,8 +14,11 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class Config(object):
     ROOT_DIR = ROOT_DIR
+    DATA_DIR = os.path.join(ROOT_DIR, 'data')
     RAW_DIR = os.path.join(ROOT_DIR, 'data', 'mtg_images')
     CROPPED_DIR = os.path.join(ROOT_DIR, 'data', 'cropped')
     CURATED_DIR = os.path.join(ROOT_DIR, 'data', 'curated')
     RESULTS_DIR = os.path.join(ROOT_DIR, 'results')
     version = 'v1'
+    CLOUD_DATA = 's3://scott-p-white/website/data'
+    CLOUD_RESULTS = 's3://scott-p-white/website/results'

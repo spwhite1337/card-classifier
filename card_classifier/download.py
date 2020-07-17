@@ -1,5 +1,7 @@
 import os
 import requests
+import argparse
+
 import pandas as pd
 from tqdm import tqdm
 
@@ -91,14 +93,28 @@ def download_magic():
     """
     Download raw .jpgs of magic the gathering cards
     """
-    logger.info('Downloading Metadata')
-    metadata = get_mtg_metadata()
-    logger.info('Wrangling Metadata')
-    metadata = wrangle_mtg_metadata(metadata)
-    logger.info('Downloading Image files')
-    df_failed = _download_magic(metadata)
-    logger.info('Failed to download {} images.'.format(df_failed.shape[0]))
-    logger.info('Saving Metadata')
-    metadata.to_csv(os.path.join(Config.RAW_DIR, 'metadata.csv'), index=False)
-    logger.info('Saving Failed Images info.')
-    df_failed.to_csv(os.path.join(Config.RAW_DIR, 'failed_images.csv'), index=False)
+    parser = argparse.ArgumentParser(prog='MTG Download')
+    parser.add_argument('--aws', action='store_true')
+    args = parser.parse_args()
+
+    if args.aws:
+        logger.info('Downloading Data from AWS')
+        include_flags = '--exclude * --include cropped/*.jpg --include curated/*.jpg --include mtg_images/*'
+        aws_sync = 'aws s3 {} {} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR, include_flags)
+        os.system(aws_sync)
+        logger.info('Downloading Results from AWS')
+        include_flags = '--exclude * --include variables.index --include variables.data-* --include saved_model.pb'
+        aws_sync = 'aws s3 {} {} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR, include_flags)
+        os.system(aws_sync)
+    else:
+        logger.info('Downloading Metadata')
+        metadata = get_mtg_metadata()
+        logger.info('Wrangling Metadata')
+        metadata = wrangle_mtg_metadata(metadata)
+        logger.info('Downloading Image files')
+        df_failed = _download_magic(metadata)
+        logger.info('Failed to download {} images.'.format(df_failed.shape[0]))
+        logger.info('Saving Metadata')
+        metadata.to_csv(os.path.join(Config.RAW_DIR, 'metadata.csv'), index=False)
+        logger.info('Saving Failed Images info.')
+        df_failed.to_csv(os.path.join(Config.RAW_DIR, 'failed_images.csv'), index=False)
