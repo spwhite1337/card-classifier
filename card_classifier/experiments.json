@@ -1,11 +1,11 @@
 [
    {
-      "model_type": "VGG", "version": "v1", "epochs": 10
+      "model_type": "VGG", "epochs": 10
    },
    {
-      "model_type": "ResNet", "version": "v1", "epochs": 10
+      "model_type": "ResNet", "epochs": 10
    },
    {
-      "model_type": "Inception", "version": "v1", "epochs": 10
+      "model_type": "Inception", "epochs": 10
    }
 ]
