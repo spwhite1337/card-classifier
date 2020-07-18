@@ -23,10 +23,11 @@ def run_experiments():
 
     # Iterate through experiments
     for experiment in experiments:
-        mcc = MagicCardClassifier(version=args.version, **experiment)
-        try:
-            mcc.train()
-            mcc.diagnose()
-            mcc.save()
-        except Exception as err:
-            logger.error(err)
+        for color in MagicCardClassifier.card_colors:
+            mcc = MagicCardClassifier(version=args.version, train_color=color, **experiment)
+            try:
+                mcc.train()
+                mcc.diagnose()
+                mcc.save()
+            except Exception as err:
+                logger.error(err)

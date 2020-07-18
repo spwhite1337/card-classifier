@@ -42,6 +42,7 @@ class MagicCardClassifier(object):
     target_size = (128, 128)
 
     def __init__(self,
+                 train_color: str = 'B',
                  # Processing
                  zoom_range: bool = False,
                  horizontal_flip: bool = False,
@@ -66,6 +67,7 @@ class MagicCardClassifier(object):
         self.brightness_range = brightness_range
 
         # Training
+        self.train_color = train_color
         self.model_type = model_type
         self.learning_rate = learning_rate
         self.batch_size = batch_size
@@ -155,59 +157,58 @@ class MagicCardClassifier(object):
         """
         Train a model for each color class
         """
-        for color in self.card_colors:
-            train, test = self.process(color)
+        train, test = self.process(self.train_color)
 
-            # Instantiate model
-            if self.debug:
-                # Quick model for debugging
-                model = Sequential([
-                    Dense(3, activation='sigmoid'),
-                    Dense(3, activation='sigmoid'),
-                    Dense(3, activation='sigmoid')
-                ])
-            else:
-                model = Sequential()
-                model.add(self.model_options.get(self.model_type)(
-                    include_top=False,
-                    weights='imagenet',
-                    input_shape=(self.target_size[0], self.target_size[1], 3)
-                ))
-                # 10 Dense NN on "top"
-                model.add(Dense(10))
+        # Instantiate model
+        if self.debug:
+            # Quick model for debugging
+            model = Sequential([
+                Dense(3, activation='sigmoid'),
+                Dense(3, activation='sigmoid'),
+                Dense(3, activation='sigmoid')
+            ])
+        else:
+            model = Sequential()
+            model.add(self.model_options.get(self.model_type)(
+                include_top=False,
+                weights='imagenet',
+                input_shape=(self.target_size[0], self.target_size[1], 3)
+            ))
+            # 10 Dense NN on "top"
+            model.add(Dense(10))
 
-            # Add activation layer for binary classification
-            model.add(Flatten())
-            model.add(Dense(1, activation='sigmoid'))
+        # Add activation layer for binary classification
+        model.add(Flatten())
+        model.add(Dense(1, activation='sigmoid'))
 
-            # Compile the model
-            model.compile(
-                optimizer=Adam(learning_rate=self.learning_rate),
-                loss='binary_crossentropy',
-                metrics=[AUC()]
-            )
+        # Compile the model
+        model.compile(
+            optimizer=Adam(learning_rate=self.learning_rate),
+            loss='binary_crossentropy',
+            metrics=[AUC()]
+        )
 
-            # Callbacks
-            tensorboard = TensorBoard(log_dir=os.path.join(Config.ROOT_DIR, 'logs'))
-            csv_logger = CSVLogger(os.path.join(Config.ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
-                color, self.model_type, self.version)), separator=',', append=False)
-            early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
-            reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
-                                          cooldown=2)
-            callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else [csv_logger]
+        # Callbacks
+        tensorboard = TensorBoard(log_dir=os.path.join(Config.ROOT_DIR, 'logs'))
+        csv_logger = CSVLogger(os.path.join(Config.ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
+            self.train_color, self.model_type, self.version)), separator=',', append=False)
+        early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
+                                      cooldown=2)
+        callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else [csv_logger]
 
-            # Fit the model
-            model.fit(x=train,
-                      steps_per_epoch=train.n // train.batch_size if not self.debug else 10,
-                      validation_data=test,
-                      validation_steps=test.n // test.batch_size if not self.debug else 10,
-                      class_weight=self._class_weights(color),
-                      epochs=self.epochs if not self.debug else 3,
-                      verbose=1,
-                      callbacks=callbacks)
+        # Fit the model
+        model.fit(x=train,
+                  steps_per_epoch=train.n // train.batch_size if not self.debug else 10,
+                  validation_data=test,
+                  validation_steps=test.n // test.batch_size if not self.debug else 10,
+                  class_weight=self._class_weights(self.train_color),
+                  epochs=self.epochs if not self.debug else 3,
+                  verbose=1,
+                  callbacks=callbacks)
 
-            # Save the model
-            self.models[color] = model
+        # Save the model
+        self.models[self.train_color] = model
 
     def diagnose(self):
         """
@@ -220,6 +221,8 @@ class MagicCardClassifier(object):
         df_results = []
         for model_color, model in self.models.items():
             for card_color in self.card_colors:
+                if card_color not in self.models.keys():
+                    continue
                 # Get generator
                 pred_generator = self._prediction_generator(os.path.join(self.curated_dir, card_color, 'validation'))
                 # Predict
