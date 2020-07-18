@@ -17,7 +17,7 @@ def api_cli():
         display_output=args.display_output)
 
 
-def api(version: str, model_type: str, input_path: str, save_path: str = None, display_output: bool = False):
+def api(version: str, model_type: str, input_path: str, display_output: bool = False):
     """
     Predict from trained models
     """
@@ -31,7 +31,4 @@ def api(version: str, model_type: str, input_path: str, save_path: str = None, d
         pp = pprint.PrettyPrinter(indent=4, compact=True)
         pp.pprint(outputs)
 
-    # Save outputs
-    if save_path:
-        with open(save_path, 'wb') as fp:
-            pickle.dump(outputs, fp)
+    return outputs
