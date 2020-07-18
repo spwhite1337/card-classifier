@@ -49,7 +49,7 @@ class MagicCardClassifier(object):
 
                  # Training
                  model_type: str = 'VGG',
-                 learning_rate: float = 10 ** -5,
+                 learning_rate: float = 10 ** -4,
                  batch_size: int = 12,
                  epochs: int = 5,
 
