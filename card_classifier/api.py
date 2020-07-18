@@ -9,11 +9,10 @@ def api_cli():
     parser.add_argument('--input_path', type=str, required=True)
     parser.add_argument('--version', type=str, default='v1')
     parser.add_argument('--model_type', type=str, default='VGG')
-    parser.add_argument('--save_path', type=str, required=False)
     parser.add_argument('--display_output', action='store_true')
     args = parser.parse_args()
 
-    api(version=args.version, model_type=args.model_type, input_path=args.input_path, save_path=args.save_path,
+    api(version=args.version, model_type=args.model_type, input_path=args.input_path,
         display_output=args.display_output)
 
 
