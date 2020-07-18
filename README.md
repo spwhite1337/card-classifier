@@ -40,7 +40,7 @@ in the positive class and something like COCO or ImageNet images in the negative
 ## Train
 
 - Configure experiments in `card_classifier/experiments.json`
-- Run `cc_run_experiments`
+- Run `cc_run_experiments --version v1`
 - Optional: Run `cc_run_experiments --debug` for a minimal working model. 
 
 ## Diagnostics
