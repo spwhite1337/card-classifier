@@ -22,6 +22,7 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `conda activate card-classifier`
     - `pip install --upgrade pip`
     - `tmux new -s card-classifier`
+    - `aws configure`
 - `cd card-classifier`
 - `pip install -e .`
 - Optional: Download datasets and results sets with `cc_download_magic --aws`
