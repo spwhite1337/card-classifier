@@ -15,11 +15,11 @@ in the positive class and something like COCO or ImageNet images in the negative
 ## Procedure
 
 - Optional: Set up environment on Ubuntu 18.04 server (e.g. AWS) with:
-    - `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`
+    - `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh` (Download Conda)
     - `bash Anaconda3-2018.12-Linux-x86_64.sh` (Accept defaults in prompts)
     - `source .bashrc` for conda commands
     - `conda create -n card-classifier python=3.5`
-    - `conda activate card-classifier`
+    - `conda activate card-classifier` 
     - `pip install --upgrade pip`
     - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
     - `tmux new -s card-classifier`
