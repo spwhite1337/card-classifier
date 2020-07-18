@@ -36,7 +36,7 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 ## Predictions
 
-- Run `cc_predictions --model_type VGG --version v1 --input_path ./samples` to generate sample predictions
+- Run `cc_predictions --model_type VGG --version v1 --input_path ./data/cc_samples` to generate sample predictions
 - Note: samples images should reside in a subdirectory in the input_path
 - Output is a dictionary with keys as filenames and values as a dictionary with keys as color and values as predictions
 
