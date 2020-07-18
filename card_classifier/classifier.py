@@ -42,6 +42,7 @@ class MagicCardClassifier(object):
     target_size = (128, 128)
 
     def __init__(self,
+                 model_type: str,
                  train_color: str = 'B',
                  # Processing
                  zoom_range: bool = False,
@@ -49,7 +50,6 @@ class MagicCardClassifier(object):
                  brightness_range: bool = False,
 
                  # Training
-                 model_type: str = 'VGG',
                  learning_rate: float = 10 ** -4,
                  batch_size: int = 32,
                  epochs: int = 10,
@@ -246,7 +246,7 @@ class MagicCardClassifier(object):
                 df_results.append(df_result)
         df_results = pd.concat(df_results).reset_index(drop=True)
 
-        # Plots
+        # Plots that build up as models are trained
         with PdfPages(os.path.join(self.results_dir, 'diagnostics.pdf')) as pdf:
             # Training Logs
             logger.info('Training Logs.')
