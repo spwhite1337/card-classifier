@@ -52,7 +52,7 @@ class MagicCardClassifier(object):
                  model_type: str = 'VGG',
                  learning_rate: float = 10 ** -4,
                  batch_size: int = 32,
-                 epochs: int = 5,
+                 epochs: int = 10,
 
                  # I/O
                  debug: bool = False,
@@ -76,7 +76,7 @@ class MagicCardClassifier(object):
         # I/O
         self.debug = debug
         self.version = version
-        self.results_dir = os.path.join(results_dir, model_type, version)
+        self.results_dir = os.path.join(results_dir, model_type, version, self.train_color)
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
@@ -84,7 +84,8 @@ class MagicCardClassifier(object):
         self.models = {}
         if load:
             for color in self.card_colors:
-                self.models[color] = load_model(filepath=os.path.join(self.results_dir, color))
+                if os.path.exists(os.path.join(os.path.dirname(self.results_dir), color)):
+                    self.models[color] = load_model(filepath=os.path.join(os.path.dirname(self.results_dir), color))
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
@@ -195,11 +196,16 @@ class MagicCardClassifier(object):
         early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
                                       cooldown=2)
-        callbacks = [tensorboard, csv_logger, early_stopping, reduce_lr] if not self.debug else [csv_logger]
+        callbacks = [
+            tensorboard,
+            csv_logger,
+            # early_stopping,
+            reduce_lr
+        ] if not self.debug else [csv_logger]
 
         # Fit the model
         model.fit(x=train,
-                  steps_per_epoch=train.n // train.batch_size if not self.debug else 10,
+                  steps_per_epoch=(train.n / 10) // train.batch_size if not self.debug else 10,
                   validation_data=test,
                   validation_steps=test.n // test.batch_size if not self.debug else 10,
                   class_weight=self._class_weights(self.train_color),
@@ -217,12 +223,10 @@ class MagicCardClassifier(object):
         if len(self.models) == 0:
             raise ValueError('Train models first.')
 
-        # Get predictions for each positive class with every model
+        # Get predictions for each positive class with every model trained so far
         df_results = []
         for model_color, model in self.models.items():
             for card_color in self.card_colors:
-                if card_color not in self.models.keys():
-                    continue
                 # Get generator
                 pred_generator = self._prediction_generator(os.path.join(self.curated_dir, card_color, 'validation'))
                 # Predict
@@ -243,8 +247,7 @@ class MagicCardClassifier(object):
         df_results = pd.concat(df_results).reset_index(drop=True)
 
         # Plots
-        with PdfPages(os.path.join(self.results_dir, 'diagnostics.pdf')) \
-                as pdf:
+        with PdfPages(os.path.join(self.results_dir, 'diagnostics.pdf')) as pdf:
             # Training Logs
             logger.info('Training Logs.')
             for metric in ['loss', 'auc']:
@@ -324,9 +327,7 @@ class MagicCardClassifier(object):
             plt.close()
 
         # Card samples
-        with PdfPages(os.path.join(self.results_dir, 'samples.pdf')) \
-                as pdf:
-
+        with PdfPages(os.path.join(self.results_dir, 'samples.pdf')) as pdf:
             # Sample images for each model
             logger.info('Getting Select Examples.')
             df_samples = []
@@ -376,9 +377,9 @@ class MagicCardClassifier(object):
         """
         Save models
         """
-        logger.info('Saving Classifiers.')
+        logger.info('Saving Classifier.')
         for color, model in self.models.items():
-            model.save(os.path.join(self.results_dir, color))
+            model.save(os.path.join(os.path.dirname(self.results_dir), color))
 
     def load(self):
         """
@@ -387,7 +388,8 @@ class MagicCardClassifier(object):
         logger.info('Loading Classifiers.')
         self.models = {}
         for color in self.card_colors:
-            self.models[color] = load_model(os.path.join(self.results_dir, color), compile=True)
+            if os.path.exists(os.path.join(os.path.dirname(self.results_dir), color)):
+                self.models[color] = load_model(os.path.join(os.path.dirname(self.results_dir), color), compile=True)
 
     def predict(self, input_path: str) -> dict:
         """
@@ -407,7 +409,7 @@ class MagicCardClassifier(object):
                     batch_size=1,
                     verbose=1,
                     steps=pred_generator.n
-                )[:, 0] for color in self.card_colors
+                )[:, 0] for color in self.card_colors if color in self.models.keys()
         }
 
         # Wrangle outputs so that primary key is filename, values are dict with keys as colors and vals as preds
