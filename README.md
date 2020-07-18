@@ -21,7 +21,7 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `conda create -n card-classifier python=3.5`
     - `conda activate card-classifier`
     - `pip install --upgrade pip`
-    - `sudo apt-get install libsm6 libxrender1 libfontconfig1`
+    - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
     - `tmux new -s card-classifier`
 - `cd card-classifier`
 - `pip install -e .`
