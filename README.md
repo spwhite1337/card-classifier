@@ -16,6 +16,8 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 - `cd card-classifier`
 - `pip install -e .`
+- Optional: Download datasets and results sets with `cc_download --aws`
+    - Skip datasets or results sets with `cc_download --aws --skipdata --skipresults`
 
 ## Data
 
