@@ -24,6 +24,7 @@ setup(
         'dash',
         'ipykernel',
         'opencv-python',
+        'Pillow',
         'tensorflow',
         'Keras',
         'scikit-learn',
