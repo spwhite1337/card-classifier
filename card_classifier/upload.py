@@ -11,7 +11,7 @@ def upload():
 
     if not args.skipdata:
         logger.info('Uploading Data')
-        os.system('aws s3 sync {} {} --exclude .gitignore'.format(Config.DATA_DIR, Config.CLOUD_DATA))
+        os.system("aws s3 sync {} {} --exclude '.gitignore'".format(Config.DATA_DIR, Config.CLOUD_DATA))
     if not args.skipresults:
         logger.info('Uploading Results')
-        os.system('aws s3 sync {} {} --exclude .gitignore'.format(Config.RESULTS_DIR, Config.CLOUD_RESULTS))
+        os.system("aws s3 sync {} {} --exclude '.gitignore'".format(Config.RESULTS_DIR, Config.CLOUD_RESULTS))
