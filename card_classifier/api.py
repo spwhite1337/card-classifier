@@ -1,7 +1,8 @@
-import pickle
 import pprint
 import argparse
 from card_classifier.classifier import MagicCardClassifier
+
+from config import logger
 
 
 def api_cli():
@@ -24,10 +25,10 @@ def api(version: str, model_type: str, input_path: str, display_output: bool = F
     mcc = MagicCardClassifier(version=version, model_type=model_type, load=True)
 
     # Predict
-    outputs = mcc.predict(input_path)
+    output = mcc.predict(input_path)
 
     if display_output:
         pp = pprint.PrettyPrinter(indent=4, compact=True)
-        pp.pprint(outputs)
+        logger.info('Output: {}'.format(pp.pprint(output)))
 
-    return outputs
+    return output
