@@ -39,7 +39,7 @@ class MagicCardClassifier(object):
         'Inception': InceptionV3,
     }
 
-    target_size: Tuple = (128, 128)
+    target_size = (128, 128)
 
     def __init__(self,
                  # Processing
