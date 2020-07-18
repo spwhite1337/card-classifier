@@ -105,11 +105,13 @@ def download_magic():
             include_flags = '--exclude * --include cropped/*.jpg --include curated/*.jpg --include mtg_images/* ' \
                             '--include cc_samples/*'
             aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR, include_flags)
+            logger.info(aws_sync)
             os.system(aws_sync)
         if not args.skipresults:
             logger.info('Downloading Results from AWS')
             include_flags = '--exclude * --include variables.index --include variables.data-* --include saved_model.pb'
             aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR, include_flags)
+            logger.info(aws_sync)
             os.system(aws_sync)
     else:
         logger.info('Downloading Metadata')
