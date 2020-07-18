@@ -74,7 +74,7 @@ class MagicCardClassifier(object):
         # I/O
         self.debug = debug
         self.version = version
-        self.results_dir: str = os.path.join(results_dir, model_type, version)
+        self.results_dir = os.path.join(results_dir, model_type, version)
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
