@@ -19,10 +19,10 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `bash Anaconda3-2018.12-Linux-x86_64.sh` (Accept defaults in prompts)
     - `source .bashrc` for conda commands
     - `conda create -n card-classifier python=3.5`
+    - `tmux new -s card-classifier`
     - `conda activate card-classifier` 
     - `pip install --upgrade pip`
     - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
-    - `tmux new -s card-classifier`
 - `cd card-classifier`
 - `pip install -e .`
 - `aws configure` (enter AWS keys in prompt)
