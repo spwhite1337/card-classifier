@@ -22,9 +22,9 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `conda activate card-classifier`
     - `pip install --upgrade pip`
     - `tmux new -s card-classifier`
-- `aws configure` (enter AWS keys in prompt)
 - `cd card-classifier`
 - `pip install -e .`
+- `aws configure` (enter AWS keys in prompt)
 - Optional: Download datasets and results sets with `cc_download_magic --aws`
     - Skip datasets or results sets with `cc_download_magic --aws --skipdata --skipresults`
     
