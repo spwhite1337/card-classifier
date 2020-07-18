@@ -29,6 +29,6 @@ def api(version: str, model_type: str, input_path: str, display_output: bool = F
 
     if display_output:
         pp = pprint.PrettyPrinter(indent=4, compact=True)
-        logger.info('Output: {}'.format(pp.pprint(output)))
+        logger.info('Output: \n{}'.format(pp.pformat(output)))
 
     return output
