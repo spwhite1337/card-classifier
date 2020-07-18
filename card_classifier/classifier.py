@@ -74,15 +74,15 @@ class MagicCardClassifier(object):
         # I/O
         self.debug = debug
         self.version = version
-        self.results_dir: str = results_dir
+        self.results_dir: str = os.path.join(results_dir, model_type, version)
+        if not os.path.exists(self.results_dir):
+            os.makedirs(self.results_dir)
 
         # Load
         self.models = {}
         if load:
             for color in self.card_colors:
-                self.models[color] = load_model(
-                    filepath=os.path.join(self.results_dir, '{}_{}_{}'.format(self.model_type, color, self.version))
-                )
+                self.models[color] = load_model(filepath=os.path.join(self.results_dir, color))
 
     def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
@@ -188,8 +188,8 @@ class MagicCardClassifier(object):
             )
 
             # Callbacks
-            tensorboard = TensorBoard(log_dir=os.path.join(ROOT_DIR, 'logs'))
-            csv_logger = CSVLogger(os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
+            tensorboard = TensorBoard(log_dir=os.path.join(Config.ROOT_DIR, 'logs'))
+            csv_logger = CSVLogger(os.path.join(Config.ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
                 color, self.model_type, self.version)), separator=',', append=False)
             early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
@@ -240,14 +240,14 @@ class MagicCardClassifier(object):
         df_results = pd.concat(df_results).reset_index(drop=True)
 
         # Plots
-        with PdfPages(os.path.join(self.results_dir, 'diagnostics_{}_{}.pdf'.format(self.model_type, self.version))) \
+        with PdfPages(os.path.join(self.results_dir, 'diagnostics.pdf')) \
                 as pdf:
             # Training Logs
             logger.info('Training Logs.')
             for metric in ['loss', 'auc']:
                 fig, ax = plt.subplots(nrows=2, ncols=int(len(self.card_colors) / 2), figsize=(12, 12))
                 for idx, color in enumerate(self.card_colors):
-                    log_path = os.path.join(ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
+                    log_path = os.path.join(Config.ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
                         color, self.model_type, self.version
                     ))
                     if not os.path.exists(log_path):
@@ -321,7 +321,7 @@ class MagicCardClassifier(object):
             plt.close()
 
         # Card samples
-        with PdfPages(os.path.join(self.results_dir, 'samples_{}_{}.pdf'.format(self.model_type, self.version))) \
+        with PdfPages(os.path.join(self.results_dir, 'samples.pdf')) \
                 as pdf:
 
             # Sample images for each model
@@ -357,7 +357,7 @@ class MagicCardClassifier(object):
             logger.info('Saving card samples.')
             for (model_color, card_color, sample_type), df_plot in df_samples. \
                     groupby(['ModelColor', 'CardColor', 'SampleType']):
-                card_dir = os.path.join(ROOT_DIR, 'data', 'curated', card_color, 'validation')
+                card_dir = os.path.join(Config.CURATED_DIR, card_color, 'validation')
 
                 fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 12))
                 for idx, (filename, df_score) in enumerate(df_plot.groupby('filename')):
@@ -375,8 +375,7 @@ class MagicCardClassifier(object):
         """
         logger.info('Saving Classifiers.')
         for color, model in self.models.items():
-            save_file = '{}_{}_{}'.format(self.model_type, color, self.version)
-            model.save(os.path.join(self.results_dir, save_file))
+            model.save(os.path.join(self.results_dir, color))
 
     def load(self):
         """
@@ -385,8 +384,7 @@ class MagicCardClassifier(object):
         logger.info('Loading Classifiers.')
         self.models = {}
         for color in self.card_colors:
-            load_file = '{}_{}_{}'.format(self.model_type, color, self.version)
-            self.models[color] = load_model(os.path.join(self.results_dir, load_file), compile=True)
+            self.models[color] = load_model(os.path.join(self.results_dir, color), compile=True)
 
     def predict(self, input_path: str) -> dict:
         """
