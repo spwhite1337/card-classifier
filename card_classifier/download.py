@@ -110,8 +110,8 @@ def download_magic():
         data_sync = '{} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR)
         data_include = " --exclude '*' --include 'cropped/*.jpg' --include 'curated/*.jpg' " \
                        "--include 'mtg_images/*' --include 'cc_samples/*'"
-        results_include = " --exclude '*' --include 'variables.index' --include 'variables.data-*' " \
-                          "--include 'saved_model.pb'"
+        results_include = " --exclude '*' --include '*/variables.index' --include '*/variables.data-*' " \
+                          "--include '*/saved_model.pb'"
         if args.windows:
             data_include = re.sub("'", "", data_include)
             results_include = re.sub("'", "", results_include)
