@@ -26,8 +26,10 @@ in the positive class and something like COCO or ImageNet images in the negative
 - `cd card-classifier`
 - `pip install -e .`
 - `aws configure` (enter AWS keys in prompt, email me for a pair)
-- Optional: Download datasets and results sets with `cc_download_magic --aws`
+- Optional: 
+    - Download datasets and results sets with `cc_download_magic --aws` (add `--windows` if on a windows machine)
     - Skip datasets or results sets with `cc_download_magic --aws --skipdata --skipresults`
+    - Add a `--dryrun` flag to outline the job without running it
     
 
 ## Data

@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import argparse
 
@@ -95,25 +96,38 @@ def download_magic():
     """
     parser = argparse.ArgumentParser(prog='MTG Download')
     parser.add_argument('--aws', action='store_true')
+    parser.add_argument('--windows', action='store_true')
     parser.add_argument('--skipdata', action='store_true')
     parser.add_argument('--skipresults', action='store_true')
+    parser.add_argument('--dryrun', action='store_true')
     args = parser.parse_args()
 
     if args.aws:
+        # General commands
+        sync_base = 'aws s3 sync '
+        dryrun_arg = ' --dryrun'
+        results_sync = '{} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR)
+        data_sync = '{} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR)
+        data_include = " --exclude '*' --include 'cropped/*.jpg' --include 'curated/*.jpg' " \
+                       "--include 'mtg_images/*' --include 'cc_samples/*'"
+        results_include = " --exclude '*' --include 'variables.index' --include 'variables.data-*' " \
+                          "--include 'saved_model.pb'"
+        if args.windows:
+            data_include = re.sub("'", "", data_include)
+            results_include = re.sub("'", "", results_include)
+
         if not args.skipdata:
             logger.info('Downloading Data from AWS')
-            include_flags = "--exclude '*' --include 'cropped/*.jpg' --include 'curated/*.jpg' " \
-                            "--include 'mtg_images/*' --include 'cc_samples/*'"
-            aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR, include_flags)
-            logger.info(aws_sync)
-            os.system(aws_sync)
+            cc_sync = sync_base + data_sync + data_include
+            cc_sync += dryrun_arg if args.dryrun else ''
+            logger.info(cc_sync)
+            os.system(cc_sync)
         if not args.skipresults:
             logger.info('Downloading Results from AWS')
-            include_flags = "--exclude '*' --include 'variables.index' --include 'variables.data-*' " \
-                            "--include 'saved_model.pb'"
-            aws_sync = 'aws s3 sync {} {} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR, include_flags)
-            logger.info(aws_sync)
-            os.system(aws_sync)
+            cc_sync = sync_base + results_sync + results_include
+            cc_sync += dryrun_arg if args.dryrun else ''
+            logger.info(cc_sync)
+            os.system(cc_sync)
     else:
         logger.info('Downloading Metadata')
         metadata = get_mtg_metadata()
