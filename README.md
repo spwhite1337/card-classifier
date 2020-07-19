@@ -25,7 +25,7 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
 - `cd card-classifier`
 - `pip install -e .`
-- `aws configure` (enter AWS keys in prompt)
+- `aws configure` (enter AWS keys in prompt, email me for a pair)
 - Optional: Download datasets and results sets with `cc_download_magic --aws`
     - Skip datasets or results sets with `cc_download_magic --aws --skipdata --skipresults`
     
