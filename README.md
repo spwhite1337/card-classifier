@@ -27,14 +27,14 @@ in the positive class and something like COCO or ImageNet images in the negative
 - `pip install -e .`
 - `aws configure` (enter AWS keys in prompt, email me for a pair)
 - Optional: 
-    - Download datasets and results sets with `cc_download_magic --aws` (add `--windows` if on a windows machine)
-    - Skip datasets or results sets with `cc_download_magic --aws --skipdata --skipresults`
+    - Download datasets and results sets with `cc_download --aws` (add `--windows` if on a windows machine)
+    - Skip datasets or results sets with `cc_download --aws --skipdata --skipresults`
     - Add a `--dryrun` flag to outline the job without running it
     
 
 ## Data
 
-- Download raw data locally with `cc_download_magic`
+- Download raw data locally with `cc_download`
     - The images are extracted from this API: https://mtgjson.com/. Consider donating to support open source projects.
 - Curate data to crop down to artwork with `cc_curate_images`
 - Optional: Run `cc_count_cards` to count the cards in each category
