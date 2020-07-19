@@ -50,7 +50,7 @@ class MagicCardClassifier(object):
                  brightness_range: bool = False,
 
                  # Training
-                 learning_rate: float = 10 ** -4,
+                 learning_rate: float = 10 ** -3,
                  batch_size: int = 32,
                  epochs: int = 20,
 
