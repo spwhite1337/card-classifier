@@ -29,7 +29,7 @@ def run_experiments():
             if os.path.exists(os.path.join(Config.RESULTS_DIR, experiment['model_type'], args.version, color)) and not \
                     args.overwrite:
                 continue
-
+            logger.info('Fitting {}'.format(color))
             mcc = MagicCardClassifier(version=args.version, train_color=color, **experiment)
             try:
                 mcc.train()
