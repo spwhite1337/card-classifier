@@ -18,7 +18,7 @@ def upload():
     results_sync = '{} {}'.format(Config.CLOUD_RESULTS, Config.RESULTS_DIR)
     data_sync = '{} {}'.format(Config.CLOUD_DATA, Config.DATA_DIR)
 
-    include_flag = " -- exclude '.gitignore'"
+    include_flag = " --exclude '.gitignore'"
     if args.windows:
         include_flag = re.sub("'", "", include_flag)
 
