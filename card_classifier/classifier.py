@@ -27,7 +27,7 @@ class MagicCardClassifier(object):
     Object to train, diagnose, and predict magic card colors from images.
     """
     # All colors to train on
-    card_colors = ['B', 'G', 'N', 'R', 'U', 'W']
+    card_colors = ['W', 'G', 'N', 'R', 'U', 'B']
 
     # Curated dir
     curated_dir = Config.CURATED_DIR
