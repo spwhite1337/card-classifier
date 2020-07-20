@@ -30,7 +30,7 @@ class MagicCardClassifier(object):
     card_colors = ['W', 'G', 'N', 'R', 'U', 'B']
 
     # Curated dir
-    curated_dir = Config.CURATED_DIR
+    curated_dir = os.path.join(Config.DATA_DIR, 'card_classifier', 'curated')
 
     # Models
     model_options = {
@@ -58,7 +58,7 @@ class MagicCardClassifier(object):
                  debug: bool = False,
                  load: bool = False,
                  version: str = 'v0',
-                 results_dir: str = Config.RESULTS_DIR
+                 results_dir: str = os.path.join(Config.RESULTS_DIR, 'card_classifier')
                  ):
 
         # Processing

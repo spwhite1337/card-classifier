@@ -131,11 +131,11 @@ def curate_images():
     args = parser.parse_args()
 
     # Set up dirs
-    RAW_DIR = Config.RAW_DIR
+    RAW_DIR = os.path.join(Config.DATA_DIR, 'card_classifier', 'mtg_images')
     if not os.path.exists(RAW_DIR):
         raise FileNotFoundError('Download raw data first.')
-    CROPPED_DIR = _make_dir(Config.CROPPED_DIR)
-    CURATED_DIR = _make_dir(Config.CURATED_DIR)
+    CROPPED_DIR = _make_dir(os.path.join(Config.DATA_DIR, 'card_classifier', 'cropped'))
+    CURATED_DIR = _make_dir(os.path.join(Config.DATA_DIR, 'card_classifier', 'curated'))
 
     # Get card colors
     card_colors = [d for d in os.listdir(RAW_DIR) if '.csv' not in d]

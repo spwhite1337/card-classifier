@@ -26,8 +26,8 @@ def run_experiments():
     for experiment in experiments:
         for color in MagicCardClassifier.card_colors:
             # Skip if you aren't overwriting and model already exists
-            if os.path.exists(os.path.join(Config.RESULTS_DIR, experiment['model_type'], args.version, color)) and not \
-                    args.overwrite:
+            if os.path.exists(os.path.join(Config.RESULTS_DIR, 'card_classifier', experiment['model_type'],
+                                           args.version, color)) and not args.overwrite:
                 continue
             logger.info('Fitting {}'.format(color))
             mcc = MagicCardClassifier(version=args.version, train_color=color, **experiment)

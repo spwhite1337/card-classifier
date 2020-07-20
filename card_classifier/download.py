@@ -63,7 +63,7 @@ def _download_magic(metadata: pd.DataFrame) -> pd.DataFrame:
     """
     Download cards from web and save in data/
     """
-    save_dir = Config.RAW_DIR
+    save_dir = os.path.join(Config.DATA_DIR, 'card_classifier', 'mtg_images')
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
@@ -133,6 +133,6 @@ def download_magic():
         df_failed = _download_magic(metadata)
         logger.info('Failed to download {} images.'.format(df_failed.shape[0]))
         logger.info('Saving Metadata')
-        metadata.to_csv(os.path.join(Config.RAW_DIR, 'metadata.csv'), index=False)
+        metadata.to_csv(os.path.join(Config.DATA_DIR, 'mtg_images', 'metadata.csv'), index=False)
         logger.info('Saving Failed Images info.')
-        df_failed.to_csv(os.path.join(Config.RAW_DIR, 'failed_images.csv'), index=False)
+        df_failed.to_csv(os.path.join(Config.DATA_DIR, 'mtg_images', 'failed_images.csv'), index=False)
