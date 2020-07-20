@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import argparse
+import shutil
 
 import pandas as pd
 from tqdm import tqdm
@@ -118,12 +119,25 @@ def download_magic():
             cc_sync += dryrun_arg if args.dryrun else ''
             logger.info(cc_sync)
             os.system(cc_sync)
+
+            logger.info('Unzip image archives.')
+            for archive in tqdm(['cropped.zip', 'curated.zip', 'mtg_images.zip']):
+                full_archive = os.path.join(Config.DATA_DIR, 'card_classifier', archive)
+                if os.path.exists(full_archive):
+                    shutil.unpack_archive(full_archive, re.sub('.zip', '', full_archive), 'zip')
+
         if not args.skipresults:
             logger.info('Downloading Results from AWS')
             cc_sync = sync_base + results_sync + include_flags
             cc_sync += dryrun_arg if args.dryrun else ''
             logger.info(cc_sync)
             os.system(cc_sync)
+
+        logger.info('Unzipping archives')
+        for archive in tqdm(['cc_samples.zip', 'cropped.zip', 'curated.zip', 'mtg_images.zip']):
+            src = os.path.join(Config.DATA_DIR, 'card_classifier', archive)
+            shutil.unpack_archive(src, re.sub('.zip', '', src), 'zip')
+
     else:
         logger.info('Downloading Metadata')
         metadata = get_mtg_metadata()
