@@ -281,7 +281,7 @@ class MagicCardClassifier(object):
                 fpr, tpr, th = roc_curve(y, preds)
                 score = auc(fpr, tpr)
 
-                ax[idx // 3, idx % 3].plot(fpr, tpr, label='AUC: {a:0.2f}'.format(a=score))
+                ax[idx // 3, idx % 3].plot(fpr, tpr, label='AUC: {a:0.3f}'.format(a=score))
                 ax[idx // 3, idx % 3].plot([0, 1], [0, 1], color='black')
                 ax[idx // 3, idx % 3].set_ylabel('True Positive Rate')
                 ax[idx // 3, idx % 3].set_xlabel('False Positive Rate')
