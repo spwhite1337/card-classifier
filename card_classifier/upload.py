@@ -33,7 +33,7 @@ def upload():
             if os.path.exists(os.path.join(Config.DATA_DIR, 'card_classifier', directory)):
                 continue
             zip_dir = os.path.join(Config.DATA_DIR, 'card_classifier', directory)
-            shutil.make_archive(zip_dir, 'zip', zip_dir)
+            shutil.make_archive(zip_dir, 'zip', os.path.dirname(zip_dir))
 
         logger.info('Uploading Data')
         cc_sync = sync_base + data_sync + data_include
