@@ -362,7 +362,8 @@ class MagicCardClassifier(object):
             logger.info('Saving card samples.')
             for (model_color, card_color, sample_type), df_plot in df_samples. \
                     groupby(['ModelColor', 'CardColor', 'SampleType']):
-                card_dir = os.path.join(Config.CURATED_DIR, card_color, 'validation')
+                card_dir = os.path.join(os.path.join(Config.DATA_DIR, 'card_classifier', 'curated', card_color,
+                                                     'validation'))
 
                 fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 12))
                 for idx, (filename, df_score) in enumerate(df_plot.groupby('filename')):
