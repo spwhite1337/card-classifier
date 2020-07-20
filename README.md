@@ -43,7 +43,8 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 - Configure experiments in `card_classifier/experiments.json`
 - Run `cc_run_experiments --version v1`
-- Optional: Run `cc_run_experiments --debug` for a minimal working model. Or `--overwrite` to restart experiments.
+- Optional: Run `cc_run_experiments --version v0 --debug` for a minimal working model. Or `--overwrite` to restart 
+experiments.
 
 ## Diagnostics
 
