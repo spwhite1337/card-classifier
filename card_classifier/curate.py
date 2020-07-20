@@ -108,7 +108,7 @@ def count_cards(curated_dir: str = None):
     Count cards in sorted directories
     """
     if curated_dir is None:
-        curated_dir = Config.CURATED_DIR
+        curated_dir = os.path.join(Config.DATA_DIR, 'card_classifier', 'curated')
     if not os.path.exists(curated_dir):
         return
 
