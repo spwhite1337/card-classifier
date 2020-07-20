@@ -77,8 +77,6 @@ class MagicCardClassifier(object):
         self.debug = debug
         self.version = version
         self.results_dir = os.path.join(results_dir, model_type, version, self.train_color)
-        if not os.path.exists(self.results_dir):
-            os.makedirs(self.results_dir)
 
         # Load
         self.models = {}
@@ -380,8 +378,9 @@ class MagicCardClassifier(object):
         Save models
         """
         logger.info('Saving Classifier.')
-        for color, model in self.models.items():
-            model.save(os.path.join(os.path.dirname(self.results_dir), color))
+        if not os.path.exists(self.results_dir):
+            os.makedirs(self.results_dir)
+        self.models[self.train_color].save(self.results_dir)
 
     def load(self):
         """
