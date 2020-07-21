@@ -212,7 +212,8 @@ class MagicCardClassifier(object):
                   class_weight=self._class_weights(self.train_color),
                   epochs=self.epochs if not self.debug else 3,
                   verbose=1,
-                  callbacks=callbacks
+                  callbacks=callbacks,
+                  shuffle=False
                   )
 
         # Save the model
