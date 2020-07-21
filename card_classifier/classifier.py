@@ -88,7 +88,7 @@ class MagicCardClassifier(object):
                 if os.path.exists(os.path.join(os.path.dirname(self.results_dir), color)):
                     self.models[color] = load_model(filepath=os.path.join(os.path.dirname(self.results_dir), color))
 
-    def process(self, color: str) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
+    def process(self) -> Tuple[ImageDataGenerator, ImageDataGenerator]:
         """
         Set up Keras generators for augmented data
         """
@@ -101,7 +101,7 @@ class MagicCardClassifier(object):
             data_format='channels_last',
         )
         train_generator = train_datagen.flow_from_directory(
-            directory=os.path.join(self.curated_dir, color, 'train'),
+            directory=os.path.join(self.curated_dir, self.train_color, 'train'),
             target_size=self.target_size,
             color_mode='rgb',
             classes=['negative', 'positive'],
@@ -114,7 +114,7 @@ class MagicCardClassifier(object):
         # Set up test data generator without augmentation
         test_datagen = ImageDataGenerator(rescale=1/255.)
         test_generator = test_datagen.flow_from_directory(
-            directory=os.path.join(self.curated_dir, color, 'test'),
+            directory=os.path.join(self.curated_dir, self.train_color, 'test'),
             target_size=self.target_size,
             color_mode='rgb',
             classes=['negative', 'positive'],
@@ -143,13 +143,13 @@ class MagicCardClassifier(object):
         )
         return predict_generator
 
-    def _class_weights(self, color: str) -> dict:
+    def _class_weights(self) -> dict:
         """
         Output a dictionary to weight classes:
         The data generators list negative first, so its index is 0 and weight is set at 1.;
         The weight on the positive class (1) is the number of neg-cases / number of pos-cases
         """
-        train_dir = os.path.join(self.curated_dir, color, 'train')
+        train_dir = os.path.join(self.curated_dir, self.train_color, 'train')
         num_pos_cases = len(os.listdir(os.path.join(train_dir, 'positive')))
         num_neg_cases = len(os.listdir(os.path.join(train_dir, 'negative')))
 
@@ -159,7 +159,7 @@ class MagicCardClassifier(object):
         """
         Train a model for each color class
         """
-        train, test = self.process(self.train_color)
+        train, test = self.process()
 
         # Instantiate model
         if self.debug:
@@ -209,7 +209,7 @@ class MagicCardClassifier(object):
                   steps_per_epoch=(train.n / 10) // train.batch_size if not self.debug else 10,
                   validation_data=test,
                   validation_steps=test.n // test.batch_size if not self.debug else 10,
-                  class_weight=self._class_weights(self.train_color),
+                  class_weight=self._class_weights(),
                   epochs=self.epochs if not self.debug else 3,
                   verbose=1,
                   callbacks=callbacks,
