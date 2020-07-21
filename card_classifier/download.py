@@ -133,11 +133,6 @@ def download_magic():
             logger.info(cc_sync)
             os.system(cc_sync)
 
-        logger.info('Unzipping archives')
-        for archive in tqdm(['cc_samples.zip', 'cropped.zip', 'curated.zip', 'mtg_images.zip']):
-            src = os.path.join(Config.DATA_DIR, 'card_classifier', archive)
-            shutil.unpack_archive(src, re.sub('.zip', '', src), 'zip')
-
     else:
         logger.info('Downloading Metadata')
         metadata = get_mtg_metadata()
