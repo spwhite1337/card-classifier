@@ -52,7 +52,7 @@ class MagicCardClassifier(object):
                  # Training
                  learning_rate: float = 10 ** -3,
                  batch_size: int = 32,
-                 epochs: int = 20,
+                 epochs: int = 15,
 
                  # I/O
                  debug: bool = False,

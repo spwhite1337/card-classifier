@@ -31,9 +31,6 @@ def run_experiments():
                 continue
             logger.info('Fitting {}'.format(color))
             mcc = MagicCardClassifier(version=args.version, train_color=color, **experiment)
-            # try:
             mcc.train()
             mcc.diagnose()
             mcc.save()
-            # except Exception as err:
-            #     logger.error(err)
