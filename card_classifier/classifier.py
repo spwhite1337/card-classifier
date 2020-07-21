@@ -195,7 +195,7 @@ class MagicCardClassifier(object):
         csv_logger = CSVLogger(os.path.join(Config.ROOT_DIR, 'logs', 'csvlogger_{}_{}_{}.csv'.format(
             self.train_color, self.model_type, self.version)), separator=',', append=False)
         early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1, min_delta=0,
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1, min_delta=0,
                                       cooldown=2)
         callbacks = [
             tensorboard,
