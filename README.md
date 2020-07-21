@@ -23,6 +23,7 @@ in the positive class and something like COCO or ImageNet images in the negative
     - `conda activate card-classifier` 
     - `pip install --upgrade pip`
     - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
+    - `pip install setuptools --upgrade`
 - `cd card-classifier`
 - `pip install -e .`
 - `aws configure` (enter AWS keys in prompt, email me for a pair)
