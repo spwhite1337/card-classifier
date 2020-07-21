@@ -12,7 +12,7 @@ def run_experiments():
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--version', type=str, default='v0')
     parser.add_argument('--overwrite', action='store_true')
-    parser.add_argument('--color', typ=str, required=False)
+    parser.add_argument('--color', type=str, required=False)
     args = parser.parse_args()
 
     # Load experiments
