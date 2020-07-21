@@ -125,6 +125,7 @@ def download_magic():
                 full_archive = os.path.join(Config.DATA_DIR, 'card_classifier', archive)
                 if os.path.exists(full_archive):
                     shutil.unpack_archive(full_archive, re.sub('.zip', '', full_archive), 'zip')
+                    os.remove(full_archive)
 
         if not args.skipresults:
             logger.info('Downloading Results from AWS')
