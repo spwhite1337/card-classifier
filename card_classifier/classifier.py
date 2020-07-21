@@ -22,6 +22,9 @@ from sklearn.metrics import auc, roc_curve
 from config import Config, logger
 
 
+np.random.seed(187)
+
+
 class MagicCardClassifier(object):
     """
     Object to train, diagnose, and predict magic card colors from images.
