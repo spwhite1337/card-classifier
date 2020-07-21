@@ -221,6 +221,8 @@ class MagicCardClassifier(object):
         """
         if len(self.models) == 0:
             raise ValueError('Train models first.')
+        if not os.path.exists(self.results_dir):
+            os.makedirs(self.results_dir)
 
         # Get predictions for each positive class with every model trained so far
         df_results = []
