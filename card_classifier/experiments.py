@@ -12,6 +12,7 @@ def run_experiments():
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--version', type=str, default='v0')
     parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('--color', typ=str, required=False)
     args = parser.parse_args()
 
     # Load experiments
@@ -25,6 +26,10 @@ def run_experiments():
     # Iterate through experiments
     for experiment in experiments:
         for color in MagicCardClassifier.card_colors:
+            if args.color is not None:
+                if color != args.color:
+                    logger.info('Skipping {}'.format(color))
+                    continue
             # Skip if you aren't overwriting and model already exists
             if os.path.exists(os.path.join(Config.RESULTS_DIR, 'card_classifier', experiment['model_type'],
                                            args.version, color)) and not args.overwrite:
