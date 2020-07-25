@@ -49,7 +49,11 @@ experiments.
 
 ## Diagnostics
 
-- The experiments output a diagnostics report and sample cards to `results/`
+- The experiments output a diagnostics report and sample cards to `results/{model_type}/{version}/{color}`
+- Running `cc_diagnostics --model_type VGG --version v1` will run a report for all models to 
+`results/{model_type}/{version}/all`. 
+    - Note: I unwittedly deleted the training logs when I shut down my ec2 instances. So if you want those you have to 
+    go to the individual colors reports. 
 
 ## Predictions
 

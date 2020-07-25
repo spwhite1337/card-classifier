@@ -13,7 +13,8 @@ setup(
         'cc_count_cards = card_classifier.curate:count_cards',
         'cc_run_experiments = card_classifier.experiments:run_experiments',
         'cc_predictions = card_classifier.api:api_cli',
-        'cc_upload = card_classifier.upload:upload'
+        'cc_upload = card_classifier.upload:upload',
+        'cc_diagnostics = card_classifier.diagnostics:diagnose'
     ]},
     install_requires=[
         'pandas',
