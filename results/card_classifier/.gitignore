@@ -1,3 +1,3 @@
 *
-!*.pdf
+!VGG/v1/*.pdf
 !.gitignore
