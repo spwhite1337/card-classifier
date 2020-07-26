@@ -312,6 +312,7 @@ class MagicCardClassifier(object):
                 ax[idx // 3, idx % 3].set_title(color)
                 ax[idx // 3, idx % 3].legend()
                 ax[idx // 3, idx % 3].grid(True)
+                ax[idx // 3, idx % 3].set_xlim([0, 1])
             plt.tight_layout()
             pdf.savefig()
             plt.close()
