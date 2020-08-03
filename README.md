@@ -12,6 +12,13 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 <img src="/docs/mtg_logo.png" alt="MTG Logo" width="512">
 
+---
+<p>
+    <img src="docs/keras_logo.png" alt="Keras Logo" width="256">
+</p>
+
+---
+
 ## Procedure
 
 - Optional: Set up environment on Ubuntu 18.04 server (e.g. AWS) with:
