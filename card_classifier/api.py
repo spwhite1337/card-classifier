@@ -1,7 +1,7 @@
 import pprint
 import argparse
-from card_classifier.classifier import MagicCardClassifier
 
+from card_classifier.sample import sample
 from config import logger
 
 
@@ -21,11 +21,8 @@ def api(version: str, model_type: str, input_path: str, display_output: bool = F
     """
     Predict from trained models
     """
-    # Instantiate classifier and load models
-    mcc = MagicCardClassifier(version=version, model_type=model_type, load=True)
-
-    # Predict
-    output = mcc.predict(input_path)
+    # Load samples
+    output = sample
 
     if display_output:
         pp = pprint.PrettyPrinter(indent=4, compact=True)

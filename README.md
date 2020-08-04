@@ -1,4 +1,4 @@
-# Card Classifier
+# Card Classifier (Minified)
 
 Buzzfeed style app that outputs the card color for Magic The Gathering from an input image. 
 
@@ -21,52 +21,16 @@ in the positive class and something like COCO or ImageNet images in the negative
 
 ## Procedure
 
-- Optional: Set up environment on Ubuntu 18.04 server (e.g. AWS) with:
-    - `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh` (Download Conda)
-    - `bash Anaconda3-2018.12-Linux-x86_64.sh` (Accept defaults in prompts)
-    - `source .bashrc` for conda commands
-    - `conda create -n card-classifier python=3.5`
-    - `tmux new -s card-classifier`
-    - `conda activate card-classifier` 
-    - `pip install --upgrade pip`
-    - `sudo apt-get install libsm6 libxrender1 libfontconfig1` (for `open-cv` compatibility)
-    - `pip install setuptools --upgrade`
 - `cd card-classifier`
 - `pip install -e .`
-- `aws configure` (enter AWS keys in prompt, email me for a pair)
-- Optional: 
-    - Download datasets and results sets with `cc_download --aws` (add `--windows` if on a windows machine)
-    - Skip datasets or results sets with `cc_download --aws --skipdata --skipresults`
-    - Add a `--dryrun` flag to outline the job without running it
-    
-
-## Data
-
-- Download raw data locally with `cc_download`
-    - The images are extracted from this API: https://mtgjson.com/. Consider donating to support open source projects.
-- Curate data to crop down to artwork with `cc_curate_images`
-- Optional: Run `cc_count_cards` to count the cards in each category
-
-## Train
-
-- Configure experiments in `card_classifier/experiments.json`
-- Run `cc_run_experiments --version v1`
-- Optional: Run `cc_run_experiments --version v0 --debug` for a minimal working model. Or `--overwrite` to restart 
-experiments.
-
-## Diagnostics
-
-- The experiments output a diagnostics report and sample cards to `results/{model_type}/{version}/{color}`
-- Running `cc_diagnostics --model_type VGG --version v1` will run a report for all models to 
-`results/{model_type}/{version}/all`. 
-    - Note: I unwittingly deleted the training logs when I shut down my ec2 instances. So if you want those you have to 
-    go to the individual colors reports. 
 
 ## Predictions
 
+This minified version just loads a dictionary of results from previously input sample images. It does not
+work for new images. It is intended for lightweight development of the Website that serves it.
+
 - Run `cc_predictions --version v1 --input_path ./data/card_classifier/cc_samples --display_output` 
-to generate sample predictions
-- Note: samples images should reside in a subdirectory in the input_path
+to output "results"
 ```
 2020-07-25 11:34:41 INFO     Output:
 {   'images\\balrog.jpg': {   'B': 0.9783472,
