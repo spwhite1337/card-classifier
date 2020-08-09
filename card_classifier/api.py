@@ -2,13 +2,13 @@ import pprint
 import argparse
 
 from card_classifier.sample import sample
-from config import logger
+from config import Config, logger
 
 
 def api_cli():
     parser = argparse.ArgumentParser(prog='Predict from Magic Card Classifier')
     parser.add_argument('--input_path', type=str, required=True)
-    parser.add_argument('--version', type=str, default='v1')
+    parser.add_argument('--version', type=str, default=Config.cc_version)
     parser.add_argument('--model_type', type=str, default='VGG')
     parser.add_argument('--display_output', action='store_true')
     args = parser.parse_args()
