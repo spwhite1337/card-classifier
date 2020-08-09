@@ -60,7 +60,7 @@ class MagicCardClassifier(object):
                  # I/O
                  debug: bool = False,
                  load: bool = False,
-                 version: str = 'v0',
+                 version: str = Config.cc_version,
                  results_dir: str = os.path.join(Config.RESULTS_DIR, 'card_classifier')
                  ):
 

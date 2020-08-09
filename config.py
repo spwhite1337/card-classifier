@@ -16,6 +16,6 @@ class Config(object):
     ROOT_DIR = ROOT_DIR
     DATA_DIR = os.path.join(ROOT_DIR, 'data')
     RESULTS_DIR = os.path.join(ROOT_DIR, 'results')
-    version = 'v1'
+    cc_version = 'v1'
     CLOUD_DATA = 's3://scott-p-white/website/data'
     CLOUD_RESULTS = 's3://scott-p-white/website/results'
